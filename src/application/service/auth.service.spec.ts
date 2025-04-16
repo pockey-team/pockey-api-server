@@ -4,7 +4,7 @@ import * as bcrypt from 'bcrypt';
 
 import { AuthService } from './auth.service';
 import { userCredentialMockData } from '../../__mock__';
-import { UserType } from '../../domain/user';
+import { UserRole } from '../../domain/user';
 import {
   InvalidPasswordException,
   InvalidRefreshTokenException,
@@ -157,11 +157,11 @@ describe('AuthService', () => {
       expect(jwtService.verify).toHaveBeenCalledWith(command.refreshToken);
       expect(jwtService.sign).toHaveBeenCalledTimes(2);
       expect(jwtService.sign).toHaveBeenCalledWith(
-        { id: userId, userType: UserType.ADMIN },
+        { id: userId, userType: UserRole.USER },
         { expiresIn: '1h' },
       );
       expect(jwtService.sign).toHaveBeenCalledWith(
-        { id: userId, userType: UserType.ADMIN, refreshToken: true },
+        { id: userId, userType: UserRole.USER, refreshToken: true },
         { expiresIn: '7d' },
       );
     });
