@@ -59,7 +59,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: pockey-team/pockey-gitops
-          ref: develop
+          ref: main
           token: ${{ secrets.ACTION_TOKEN }}
           path: pockey-gitops
 
@@ -75,4 +75,4 @@ jobs:
           git config --global user.email "github-actions@github.com"
           git config --global user.name "github-actions"
           git commit -am "Deploy Pockey API Server dev"
-          git push -u origin develop
+          git push -u origin main
