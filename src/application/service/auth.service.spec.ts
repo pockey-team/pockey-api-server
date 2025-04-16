@@ -29,7 +29,7 @@ describe('AuthService', () => {
         {
           provide: 'UserGateway',
           useValue: {
-            getAdminUserForLogin: jest.fn(),
+            getUserForLogin: jest.fn(),
             updateUserPassword: jest.fn(),
           },
         },
@@ -65,7 +65,7 @@ describe('AuthService', () => {
       jest.spyOn(jwtService, 'sign').mockReturnValueOnce('refreshToken');
 
       const credential = userCredentialMockData;
-      queryPortMock.getAdminUserForLogin.mockResolvedValue(credential);
+      queryPortMock.getUserForLogin.mockResolvedValue(credential);
 
       const command = { email: credential.email, password: credential.password };
 
@@ -74,8 +74,8 @@ describe('AuthService', () => {
 
       // then
       expect(result).toEqual({ accessToken: 'accessToken', refreshToken: 'refreshToken' });
-      expect(queryPortMock.getAdminUserForLogin).toHaveBeenCalledTimes(1);
-      expect(queryPortMock.getAdminUserForLogin).toHaveBeenCalledWith(command.email);
+      expect(queryPortMock.getUserForLogin).toHaveBeenCalledTimes(1);
+      expect(queryPortMock.getUserForLogin).toHaveBeenCalledWith(command.email);
       expect(bcrypt.compare).toHaveBeenCalledTimes(1);
       expect(bcrypt.compare).toHaveBeenCalledWith(command.password, credential.password);
     });
@@ -87,7 +87,7 @@ describe('AuthService', () => {
       jest.spyOn(jwtService, 'sign').mockReturnValueOnce('refreshToken');
 
       const credential = userCredentialMockData;
-      queryPortMock.getAdminUserForLogin.mockResolvedValue(credential);
+      queryPortMock.getUserForLogin.mockResolvedValue(credential);
 
       const command = { email: credential.email, password: credential.password };
 
@@ -96,25 +96,23 @@ describe('AuthService', () => {
 
       // then
       expect(result).toEqual({ accessToken: 'accessToken', refreshToken: 'refreshToken' });
-      expect(queryPortMock.getAdminUserForLogin).toHaveBeenCalledTimes(1);
-      expect(queryPortMock.getAdminUserForLogin).toHaveBeenCalledWith(command.email);
+      expect(queryPortMock.getUserForLogin).toHaveBeenCalledTimes(1);
+      expect(queryPortMock.getUserForLogin).toHaveBeenCalledWith(command.email);
       expect(bcrypt.compare).toHaveBeenCalledTimes(1);
       expect(bcrypt.compare).toHaveBeenCalledWith(command.password, credential.password);
     });
 
     it('로그인하려는 사용자가 존재하지 않으면 로그인에 실패한다', async () => {
       // given
-      jest
-        .spyOn(queryPortMock, 'getAdminUserForLogin')
-        .mockRejectedValue(new UserNotFoundException());
+      jest.spyOn(queryPortMock, 'getUserForLogin').mockRejectedValue(new UserNotFoundException());
 
       const credential = userCredentialMockData;
       const command = { email: credential.email, password: credential.password };
 
       // when & then
       await expect(service.login(command)).rejects.toThrow(new UserNotFoundException());
-      expect(queryPortMock.getAdminUserForLogin).toHaveBeenCalledTimes(1);
-      expect(queryPortMock.getAdminUserForLogin).toHaveBeenCalledWith(command.email);
+      expect(queryPortMock.getUserForLogin).toHaveBeenCalledTimes(1);
+      expect(queryPortMock.getUserForLogin).toHaveBeenCalledWith(command.email);
       expect(bcrypt.compare).not.toHaveBeenCalled();
       expect(jwtService.sign).not.toHaveBeenCalled();
     });
@@ -124,14 +122,14 @@ describe('AuthService', () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       const credential = userCredentialMockData;
-      queryPortMock.getAdminUserForLogin.mockResolvedValue(credential);
+      queryPortMock.getUserForLogin.mockResolvedValue(credential);
 
       const command = { email: credential.email, password: 'wrongPassword' };
 
       // when & then
       await expect(service.login(command)).rejects.toThrow(new InvalidPasswordException());
-      expect(queryPortMock.getAdminUserForLogin).toHaveBeenCalledTimes(1);
-      expect(queryPortMock.getAdminUserForLogin).toHaveBeenCalledWith(command.email);
+      expect(queryPortMock.getUserForLogin).toHaveBeenCalledTimes(1);
+      expect(queryPortMock.getUserForLogin).toHaveBeenCalledWith(command.email);
       expect(bcrypt.compare).toHaveBeenCalledTimes(1);
       expect(bcrypt.compare).toHaveBeenCalledWith(command.password, credential.password);
       expect(jwtService.sign).not.toHaveBeenCalled();
@@ -193,7 +191,7 @@ describe('AuthService', () => {
       jest.spyOn(jwtService, 'sign').mockReturnValueOnce('refreshToken');
 
       const credential = userCredentialMockData;
-      queryPortMock.getAdminUserForLogin.mockResolvedValue(credential);
+      queryPortMock.getUserForLogin.mockResolvedValue(credential);
       commandPortMock.updateUserPassword.mockResolvedValue(true);
 
       const command = {
@@ -207,8 +205,8 @@ describe('AuthService', () => {
 
       // then
       expect(result).toBe(true);
-      expect(queryPortMock.getAdminUserForLogin).toHaveBeenCalledTimes(1);
-      expect(queryPortMock.getAdminUserForLogin).toHaveBeenCalledWith(command.email);
+      expect(queryPortMock.getUserForLogin).toHaveBeenCalledTimes(1);
+      expect(queryPortMock.getUserForLogin).toHaveBeenCalledWith(command.email);
       expect(bcrypt.compare).toHaveBeenCalledTimes(1);
       expect(bcrypt.compare).toHaveBeenCalledWith(command.currentPassword, credential.password);
       expect(bcrypt.hash).toHaveBeenCalledTimes(1);
@@ -221,7 +219,7 @@ describe('AuthService', () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       const credential = userCredentialMockData;
-      queryPortMock.getAdminUserForLogin.mockResolvedValue(credential);
+      queryPortMock.getUserForLogin.mockResolvedValue(credential);
 
       const command = {
         email: credential.email,
@@ -231,8 +229,8 @@ describe('AuthService', () => {
 
       // when & then
       await expect(service.updatePassword(command)).rejects.toThrow(new InvalidPasswordException());
-      expect(queryPortMock.getAdminUserForLogin).toHaveBeenCalledTimes(1);
-      expect(queryPortMock.getAdminUserForLogin).toHaveBeenCalledWith(command.email);
+      expect(queryPortMock.getUserForLogin).toHaveBeenCalledTimes(1);
+      expect(queryPortMock.getUserForLogin).toHaveBeenCalledWith(command.email);
       expect(bcrypt.compare).toHaveBeenCalledTimes(1);
       expect(bcrypt.compare).toHaveBeenCalledWith(command.currentPassword, credential.password);
       expect(bcrypt.hash).not.toHaveBeenCalled();

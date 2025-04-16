@@ -25,7 +25,7 @@ export class AuthService implements AuthUseCase {
   ) {}
 
   async login(command: LoginCommand): Promise<IToken> {
-    const userCredential = await this.userDbQueryPort.getAdminUserForLogin(command.email);
+    const userCredential = await this.userDbQueryPort.getUserForLogin(command.email);
 
     const isValid = await comparePassword(command.password, userCredential.password!);
     if (!isValid) {
@@ -46,7 +46,7 @@ export class AuthService implements AuthUseCase {
   }
 
   async updatePassword(command: UpdatePasswordCommand): Promise<boolean> {
-    const userCredential = await this.userDbQueryPort.getAdminUserForLogin(command.email);
+    const userCredential = await this.userDbQueryPort.getUserForLogin(command.email);
 
     const isValid = await comparePassword(command.currentPassword, userCredential.password!);
     if (!isValid) {

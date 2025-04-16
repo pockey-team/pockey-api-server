@@ -28,7 +28,7 @@ export class UserGateway implements UserDbQueryPort, UserDbCommandPort {
     return mapToUser(user);
   }
 
-  async getAdminUserForLogin(email: string): Promise<UserCredential> {
+  async getUserForLogin(email: string): Promise<UserCredential> {
     const user = await this.userRepository.findOne({ email, role: UserRole.USER });
     if (!user) {
       throw new UserNotFoundException();
