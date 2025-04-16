@@ -1,5 +1,5 @@
+import { EntityRepository, QueryBuilder } from '@mikro-orm/mysql';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityRepository, QueryBuilder } from '@mikro-orm/postgresql';
 import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { UserDbEntity } from './user.entity';

@@ -1,6 +1,6 @@
 import { GeneratedCacheAdapter, LoadStrategy } from '@mikro-orm/core';
-import { defineConfig, Options } from '@mikro-orm/postgresql';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { defineConfig, Options } from '@mikro-orm/mysql';
+import { MySqlDriver } from '@mikro-orm/mysql';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { config } from 'dotenv';
 import { SoftDeleteHandler } from 'mikro-orm-soft-delete';
@@ -15,7 +15,7 @@ export const mikroOrmConfig: Options = defineConfig({
   password: process.env.DB_PASSWORD,
   host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT || '5432', 10),
-  driver: PostgreSqlDriver,
+  driver: MySqlDriver,
   metadataProvider: TsMorphMetadataProvider,
   debug: !isProd,
   extensions: [SoftDeleteHandler],
