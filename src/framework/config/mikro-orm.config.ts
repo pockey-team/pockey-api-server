@@ -5,7 +5,7 @@ import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { config } from 'dotenv';
 import { SoftDeleteHandler } from 'mikro-orm-soft-delete';
 
-import { isProd, isDev } from '../../common/constant';
+import { isProd } from '../../common/constant';
 
 config();
 
@@ -28,14 +28,6 @@ export const mikroOrmConfig: Options = defineConfig({
     adapter: GeneratedCacheAdapter,
     options: { data: './temp/metadata.json' },
   },
-  driverOptions:
-    isProd || isDev
-      ? {
-          connection: {
-            ssl: { rejectUnauthorized: false },
-          },
-        }
-      : undefined,
 });
 
 const createMikroOrmConfig = async (): Promise<Options> => {
