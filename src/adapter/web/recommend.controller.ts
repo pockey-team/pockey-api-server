@@ -5,7 +5,7 @@ import {
   SubmitAnswerRequest,
 } from '../../application/port/in/post/RecommendUseCase';
 
-@Controller('api/v1/recommend')
+@Controller()
 export class RecommendController {
   constructor(
     @Inject('RecommendUseCase')
