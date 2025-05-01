@@ -1,4 +1,4 @@
-import { PostListItem } from 'src/domain/post';
+import { Post, PostListItem } from 'src/domain/post';
 
 import { SwaggerDto } from '../../../../common/decorators/swagger-dto.decorator';
 import { CursorPaginationQuery } from '../../../common/query/CursorPaginationQuery';
@@ -9,4 +9,5 @@ export class GetPostsQuery extends CursorPaginationQuery {}
 
 export interface PostUseCase {
   getPosts(query: GetPostsQuery): Promise<CursorResult<PostListItem>>;
+  getPost(id: number): Promise<Post>;
 }

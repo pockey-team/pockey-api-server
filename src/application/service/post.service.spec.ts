@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { PostService } from './post.service';
-import { postListItemMockData } from '../../__mock__/post.mock';
+import { postListItemMockData, postMockData } from '../../__mock__/post.mock';
 import { GetPostsQuery } from '../port/in/post/PostUseCase';
 import { PostDbQueryPort } from '../port/out/PostDbQueryPort';
 
@@ -17,6 +17,7 @@ describe('PostService', () => {
           provide: 'PostGateway',
           useValue: {
             getPosts: jest.fn(),
+            getPostById: jest.fn(),
           },
         },
       ],
@@ -51,6 +52,24 @@ describe('PostService', () => {
       expect(result).toEqual({ items: [post], nextCursor: undefined, hasMore: false });
       expect(queryPortMock.getPosts).toHaveBeenCalledTimes(1);
       expect(queryPortMock.getPosts).toHaveBeenCalledWith(query);
+    });
+  });
+
+  describe('getPost', () => {
+    it('게시글을 조회할 수 있다', async () => {
+      // given
+      const post = postMockData;
+      queryPortMock.getPostById.mockResolvedValue(post);
+
+      const id = 1;
+
+      // when
+      const result = await service.getPost(id);
+
+      // then
+      expect(result).toEqual(post);
+      expect(queryPortMock.getPostById).toHaveBeenCalledTimes(1);
+      expect(queryPortMock.getPostById).toHaveBeenCalledWith(id);
     });
   });
 });
