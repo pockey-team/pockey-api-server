@@ -9,4 +9,7 @@ export const ERROR_MESSAGES = {
   USER: {
     NOT_FOUND: '사용자를 찾을 수 없습니다.',
   },
+  POST: {
+    NOT_FOUND: '게시글을 찾을 수 없습니다.',
+  },
 } as const;

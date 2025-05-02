@@ -3,12 +3,13 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable } from '@nestjs/common';
 
 import { PostDbEntity } from './post.entity';
-import { mapToPostListItem } from './post.mapper';
+import { mapToPost, mapToPostListItem } from './post.mapper';
 import { Order } from '../../application/common/enum/Order';
+import { PostNotFoundException } from '../../application/common/error/exception/post.exception';
 import { CursorResult } from '../../application/common/types/CursorResult';
 import { GetPostsQuery } from '../../application/port/in/post/PostUseCase';
 import { PostDbQueryPort } from '../../application/port/out/PostDbQueryPort';
-import { PostListItem } from '../../domain/post';
+import { Post, PostListItem } from '../../domain/post';
 
 @Injectable()
 export class PostGateway implements PostDbQueryPort {
@@ -30,6 +31,15 @@ export class PostGateway implements PostDbQueryPort {
 
     const items = await qb.getResult();
     return this.processCursorPagination<PostListItem>(items.map(mapToPostListItem), limit, 'id');
+  }
+
+  async getPostById(id: number): Promise<Post> {
+    const post = await this.postRepository.findOne({ id });
+    if (!post) {
+      throw new PostNotFoundException();
+    }
+
+    return mapToPost(post);
   }
 
   private processCursorPagination<T extends PostListItem>(
