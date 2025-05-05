@@ -44,6 +44,9 @@ export class ProductDbEntity {
   @Property({ type: 'json' })
   tags: string[];
 
+  @Property({ type: 'json' })
+  nextPickProductIds: number[];
+
   @Property({ onCreate: () => new Date() })
   createdAt: Date;
 }

@@ -13,4 +13,5 @@ export class Product {
   friendshipLevel: string[];
   targetGender: string;
   tags: string[];
+  nextPickProductIds: number[];
 }

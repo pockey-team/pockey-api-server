@@ -17,5 +17,6 @@ export const mapToProduct = (dbEntity: ProductDbEntity): Product => {
     friendshipLevel: dbEntity.friendshipLevel,
     targetGender: dbEntity.targetGender,
     tags: dbEntity.tags,
+    nextPickProductIds: dbEntity.nextPickProductIds,
   };
 };
