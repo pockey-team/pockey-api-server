@@ -1,15 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { uuidv7 } from 'uuidv7';
 
-import { AnswerResponse, RecommendResult, SessionResponse } from '../../domain/recommend';
-import { RecommendUseCase, SubmitAnswerCommand } from '../port/in/post/RecommendUseCase';
+import { Session, SessionAnswer } from '../../domain/recommend-session';
+import { RecommendSessionUseCase, SubmitAnswerCommand } from '../port/in/post/RecommendUseCase';
 
 @Injectable()
-export class RecommendService implements RecommendUseCase {
+export class RecommendSessionService implements RecommendSessionUseCase {
   private answerCountMap: Map<string, number> = new Map();
 
-  constructor() {}
-  async startSession(): Promise<SessionResponse> {
+  async startSession(): Promise<Session> {
     return {
       sessionId: uuidv7(),
       question: {
@@ -19,19 +18,19 @@ export class RecommendService implements RecommendUseCase {
     };
   }
 
-  async submitAnswer(command: SubmitAnswerCommand): Promise<AnswerResponse> {
+  async submitAnswer(command: SubmitAnswerCommand): Promise<SessionAnswer> {
     const currentCount = (this.answerCountMap.get(command.sessionId) || 0) + 1;
     this.answerCountMap.set(command.sessionId, currentCount);
 
     if (currentCount % 5 === 0) {
       return {
         type: 'result',
-        recommendResultId: 1,
+        resultId: 1,
       };
     }
 
     return {
-      type: 'next_question',
+      type: 'question',
       question: {
         question: '질문',
         questionOptions: ['옵션1', '옵션2', '옵션3'],
@@ -42,23 +41,5 @@ export class RecommendService implements RecommendUseCase {
   async endSession(sessionId: string): Promise<void> {
     this.answerCountMap.delete(sessionId);
     return;
-  }
-
-  async getResult(sessionId: string): Promise<RecommendResult> {
-    return {
-      sessionId,
-      type: 'result',
-      recommendResultId: 1,
-    };
-  }
-
-  async getSessions(userId: string): Promise<RecommendResult[]> {
-    return [
-      {
-        sessionId: 'sessionId',
-        type: 'result',
-        recommendResultId: 1,
-      },
-    ];
   }
 }
