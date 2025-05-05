@@ -6,6 +6,9 @@ export const ERROR_MESSAGES = {
     REQUIRE_USER_ROLE: '사용자 권한이 필요합니다.',
     TOKEN_EXPIRED: '토큰이 만료되었습니다.',
   },
+  PRODUCT: {
+    NOT_FOUND: '상품을 찾을 수 없습니다.',
+  },
   USER: {
     NOT_FOUND: '사용자를 찾을 수 없습니다.',
   },
