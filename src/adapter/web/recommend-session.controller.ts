@@ -3,7 +3,7 @@ import { Controller, Inject, Post, Delete, Param, Body } from '@nestjs/common';
 import {
   RecommendSessionUseCase,
   SubmitAnswerRequest,
-} from '../../application/port/in/post/RecommendUseCase';
+} from '../../application/port/in/recommend-session/RecommendSessionUseCase';
 
 @Controller()
 export class RecommendSessionController {

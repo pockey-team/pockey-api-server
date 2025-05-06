@@ -1,7 +1,7 @@
 import { IsString } from 'class-validator';
 
 import { SwaggerDto } from '../../../../common/decorators/swagger-dto.decorator';
-import { Session, SessionAnswer } from '../../../../domain/recommend-session';
+import { RecommendSessionResult, RecommendSessionStep } from '../../../../domain/recommend-session';
 
 @SwaggerDto()
 export class SubmitAnswerRequest {
@@ -14,7 +14,9 @@ export class SubmitAnswerCommand extends SubmitAnswerRequest {
 }
 
 export interface RecommendSessionUseCase {
-  startSession(): Promise<Session>;
-  submitAnswer(command: SubmitAnswerCommand): Promise<SessionAnswer>;
+  startSession(): Promise<RecommendSessionStep>;
+  submitAnswer(
+    command: SubmitAnswerCommand,
+  ): Promise<RecommendSessionStep | RecommendSessionResult>;
   endSession(sessionId: string): Promise<void>;
 }

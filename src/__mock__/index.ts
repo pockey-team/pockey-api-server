@@ -1,2 +1,3 @@
 export * from './post.mock';
+export * from './recommend-session.mock';
 export * from './user.mock';
