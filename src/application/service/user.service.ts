@@ -16,7 +16,7 @@ export class UserService implements UserUseCase {
     private readonly userDbCommandPort: UserDbCommandPort,
   ) {}
 
-  async getUserById(id: string): Promise<User> {
+  async getUserById(id: number): Promise<User> {
     return this.userDbQueryPort.getUserById(id);
   }
 
@@ -24,7 +24,7 @@ export class UserService implements UserUseCase {
     return this.userDbQueryPort.getUsers(query);
   }
 
-  async updateUserPassword(userId: string, body: UpdateUserPasswordCommand): Promise<boolean> {
+  async updateUserPassword(userId: number, body: UpdateUserPasswordCommand): Promise<boolean> {
     const hashedPassword = await hashPassword(body.newPassword);
     return this.userDbCommandPort.updateUserPassword(userId, hashedPassword);
   }

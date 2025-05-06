@@ -67,7 +67,7 @@ describe('AuthService', () => {
       const credential = userCredentialMockData;
       queryPortMock.getUserForLogin.mockResolvedValue(credential);
 
-      const command = { email: credential.email, password: credential.password };
+      const command = { email: credential.email!, password: credential.password! };
 
       // when
       const result = await service.login(command);
@@ -89,7 +89,7 @@ describe('AuthService', () => {
       const credential = userCredentialMockData;
       queryPortMock.getUserForLogin.mockResolvedValue(credential);
 
-      const command = { email: credential.email, password: credential.password };
+      const command = { email: credential.email!, password: credential.password! };
 
       // when
       const result = await service.login(command);
@@ -107,7 +107,7 @@ describe('AuthService', () => {
       jest.spyOn(queryPortMock, 'getUserForLogin').mockRejectedValue(new UserNotFoundException());
 
       const credential = userCredentialMockData;
-      const command = { email: credential.email, password: credential.password };
+      const command = { email: credential.email!, password: credential.password! };
 
       // when & then
       await expect(service.login(command)).rejects.toThrow(new UserNotFoundException());
@@ -124,7 +124,7 @@ describe('AuthService', () => {
       const credential = userCredentialMockData;
       queryPortMock.getUserForLogin.mockResolvedValue(credential);
 
-      const command = { email: credential.email, password: 'wrongPassword' };
+      const command = { email: credential.email!, password: 'wrongPassword' };
 
       // when & then
       await expect(service.login(command)).rejects.toThrow(new InvalidPasswordException());
@@ -139,7 +139,7 @@ describe('AuthService', () => {
   describe('refreshToken', () => {
     it('refreshToken이 유효하면 accessToken과 refreshToken을 반환한다', async () => {
       // given
-      const userId = 'uuid-v7-user-id';
+      const userId = 1;
       jest.spyOn(jwtService, 'verify').mockReturnValueOnce({ id: userId, refreshToken: true });
       jest.spyOn(jwtService, 'sign').mockReturnValueOnce('accessToken');
       jest.spyOn(jwtService, 'sign').mockReturnValueOnce('refreshToken');
@@ -170,7 +170,7 @@ describe('AuthService', () => {
         throw new JsonWebTokenError('invalid token');
       });
 
-      const userId = 'uuid-v7-user-id';
+      const userId = 1;
       const command: RefreshTokenCommand = { refreshToken: 'refreshToken', userId };
 
       // when & then
@@ -195,8 +195,8 @@ describe('AuthService', () => {
       commandPortMock.updateUserPassword.mockResolvedValue(true);
 
       const command = {
-        email: credential.email,
-        currentPassword: credential.password,
+        email: credential.email!,
+        currentPassword: credential.password!,
         newPassword: 'newPassword',
       };
 
@@ -222,7 +222,7 @@ describe('AuthService', () => {
       queryPortMock.getUserForLogin.mockResolvedValue(credential);
 
       const command = {
-        email: credential.email,
+        email: credential.email!,
         currentPassword: 'wrongPassword',
         newPassword: 'newPassword',
       };

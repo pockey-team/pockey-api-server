@@ -46,7 +46,7 @@ describe('UserService', () => {
       const user = userMockData;
       queryPortMock.getUserById.mockResolvedValue(user);
 
-      const id = 'test-id';
+      const id = 1;
 
       // when
       const result = await service.getUserById(id);

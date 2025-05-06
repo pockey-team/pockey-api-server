@@ -19,7 +19,7 @@ export class UserGateway implements UserDbQueryPort, UserDbCommandPort {
     private readonly userRepository: EntityRepository<UserDbEntity>,
   ) {}
 
-  async getUserById(id: string): Promise<User> {
+  async getUserById(id: number): Promise<User> {
     const user = await this.userRepository.findOne({ id });
     if (!user) {
       throw new UserNotFoundException();
@@ -62,13 +62,13 @@ export class UserGateway implements UserDbQueryPort, UserDbCommandPort {
     );
   }
 
-  async updateUserPassword(id: string, password: string): Promise<boolean> {
+  async updateUserPassword(id: number, password: string): Promise<boolean> {
     await this.findUserOrFail(id);
     await this.userRepository.nativeUpdate({ id }, { password });
     return true;
   }
 
-  private async findUserOrFail(userId: string): Promise<UserDbEntity> {
+  private async findUserOrFail(userId: number): Promise<UserDbEntity> {
     const user = await this.userRepository.findOne(userId);
     if (!user) {
       throw new NotFoundException();

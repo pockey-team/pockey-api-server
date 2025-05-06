@@ -7,23 +7,28 @@ import { UserRole } from '../../domain/user';
 @Entity({ tableName: 'user' })
 export class UserDbEntity {
   @PrimaryKey()
-  id: string;
+  id!: number;
+
+  @Property({ nullable: true })
+  @Unique()
+  snsId?: string; // 소셜 로그인 사용자 전용
+
+  @Property({ nullable: true })
+  @Unique()
+  deviceId?: string; // 비로그인 사용자 전용
 
   @Unique({ name: 'user_email_key' })
-  @Property()
-  email: string;
+  @Property({ nullable: true })
+  email?: string;
 
-  @Property({ hidden: true })
-  password: string;
+  @Property({ hidden: true, nullable: true })
+  password?: string;
+
+  @Property({ nullable: true })
+  nickname?: string;
 
   @Property({ nullable: true, fieldName: 'profile_url' })
   profileImageUrl?: string;
-
-  @Property()
-  firstName: string;
-
-  @Property()
-  lastName: string;
 
   @Enum({ items: () => UserRole })
   role: UserRole;

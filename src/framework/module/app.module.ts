@@ -8,6 +8,7 @@ import { CacheModule } from './cache.module';
 import { HealthModule } from './health.module';
 import { PostModule } from './post.module';
 import { RecommendSessionModule } from './recommend-session.module';
+import { UserSocialModule } from './user-social.module';
 import { UserModule } from './user.module';
 import createMikroOrmConfig from '../config/mikro-orm.config';
 
@@ -20,6 +21,7 @@ import createMikroOrmConfig from '../config/mikro-orm.config';
     PostModule,
     UserModule,
     RecommendSessionModule,
+    UserSocialModule,
     MikroOrmModule.forRootAsync({
       useFactory: async () => await createMikroOrmConfig(),
     }),
@@ -35,6 +37,7 @@ import createMikroOrmConfig from '../config/mikro-orm.config';
               { path: 'post', module: PostModule },
               { path: 'recommend-session', module: RecommendSessionModule },
               { path: 'user', module: UserModule },
+              { path: 'login', module: UserSocialModule },
             ],
           },
         ],

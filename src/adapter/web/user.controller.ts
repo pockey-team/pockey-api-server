@@ -16,7 +16,7 @@ export class UserController {
   ) {}
 
   @Get('/:id')
-  async getUser(@Param('id') id: string): Promise<User> {
+  async getUser(@Param('id') id: number): Promise<User> {
     return this.userUseCase.getUserById(id);
   }
 
@@ -27,7 +27,7 @@ export class UserController {
 
   @Patch('/:userId/password')
   async updateUserPassword(
-    @Param('userId') userId: string,
+    @Param('userId') userId: number,
     @Body() body: UpdateUserPasswordCommand,
   ): Promise<boolean> {
     return this.userUseCase.updateUserPassword(userId, body);

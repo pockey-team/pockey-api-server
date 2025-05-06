@@ -7,8 +7,7 @@ export const mapToUser = (dbEntity: UserDbEntity): User => {
     id: dbEntity.id,
     email: dbEntity.email,
     role: dbEntity.role,
-    firstName: dbEntity.firstName,
-    lastName: dbEntity.lastName,
+    nickname: dbEntity.nickname,
     profileImageUrl: dbEntity.profileImageUrl,
     createdAt: dbEntity.createdAt,
   };
@@ -27,8 +26,7 @@ export const mapToUserListItem = (dbEntity: UserDbEntity): UserListItem => {
     id: dbEntity.id,
     email: dbEntity.email,
     role: dbEntity.role,
-    firstName: dbEntity.firstName,
-    lastName: dbEntity.lastName,
+    nickname: dbEntity.nickname,
     createdAt: dbEntity.createdAt,
   };
 };

@@ -1,4 +1,4 @@
-import { IsEmail, IsString } from 'class-validator';
+import { IsEmail, IsNumber, IsString } from 'class-validator';
 
 import { SwaggerDto } from '../../../../common/decorators/swagger-dto.decorator';
 import { IToken } from '../../../../domain/auth/token';
@@ -17,8 +17,8 @@ export class RefreshTokenCommand {
   @IsString()
   refreshToken: string;
 
-  @IsString()
-  userId: string;
+  @IsNumber()
+  userId: number;
 }
 
 export class UpdatePasswordCommand {

@@ -57,7 +57,7 @@ export class AuthService implements AuthUseCase {
     return this.userDbCommandPort.updateUserPassword(userCredential.id, hashedPassword);
   }
 
-  private generateTokens(userId: string): IToken {
+  public generateTokens(userId: number): IToken {
     return {
       accessToken: this.jwtService.sign({ id: userId, role: UserRole.USER }, { expiresIn: '1h' }),
       refreshToken: this.jwtService.sign(

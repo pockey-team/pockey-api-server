@@ -1,5 +1,4 @@
 import {
-  IsBoolean,
   IsDate,
   IsEmail,
   IsEnum,
@@ -48,7 +47,7 @@ export class UpdateUserPasswordCommand {
 }
 
 export interface UserUseCase {
-  getUserById(id: string): Promise<User>;
+  getUserById(id: number): Promise<User>;
   getUsers(query: GetUsersQuery): Promise<CursorResult<UserListItem>>;
-  updateUserPassword(userId: string, body: UpdateUserPasswordCommand): Promise<boolean>;
+  updateUserPassword(userId: number, body: UpdateUserPasswordCommand): Promise<boolean>;
 }
