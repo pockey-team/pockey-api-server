@@ -1,13 +1,8 @@
-import { Body, Controller, Inject, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Inject, Post } from '@nestjs/common';
 
 import { InvalidRefreshTokenException } from '../../application/common/error/exception';
-import {
-  AuthUseCase,
-  LoginCommand,
-  UpdatePasswordCommand,
-} from '../../application/port/in/auth/AuthUseCase';
+import { AuthUseCase, SocialLoginCommand } from '../../application/port/in/auth/AuthUseCase';
 import { IToken } from '../../domain/auth/token';
-import { Public } from '../../framework/auth/decorator/public.decorator';
 import { RequestInfo } from '../../framework/auth/decorator/request-info.decorator';
 
 @Controller()
@@ -17,10 +12,9 @@ export class AuthController {
     private readonly authUseCase: AuthUseCase,
   ) {}
 
-  @Public()
-  @Post('login')
-  async login(@Body() command: LoginCommand): Promise<IToken> {
-    return this.authUseCase.login(command);
+  @Post('login/social')
+  async loginWithSocial(@Body() body: SocialLoginCommand): Promise<IToken> {
+    return this.authUseCase.loginWithSocial(body);
   }
 
   @Post('token/refresh')
@@ -33,10 +27,5 @@ export class AuthController {
       refreshToken: request.user.refreshToken,
       userId: request.user.id,
     });
-  }
-
-  @Patch('password')
-  async updatePassword(@Body() command: UpdatePasswordCommand): Promise<boolean> {
-    return this.authUseCase.updatePassword(command);
   }
 }

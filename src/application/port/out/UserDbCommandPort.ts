@@ -1,3 +1,5 @@
+import { UserDbEntity } from '../../../adapter/db/user.entity';
+
 export interface UserDbCommandPort {
-  updateUserPassword(id: number, password: string): Promise<boolean>;
+  save(user: UserDbEntity): Promise<void>;
 }

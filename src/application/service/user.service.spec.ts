@@ -1,12 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import * as bcrypt from 'bcrypt';
 
 import { UserService } from './user.service';
 import { userListItemMockData, userMockData } from '../../__mock__';
 import { Order } from '../common/enum/Order';
 import { UsersOrderBy } from '../port/in/user/UsersOrderBy';
-import { GetUsersQuery, UpdateUserPasswordCommand } from '../port/in/user/UserUseCase';
-import { UserDbCommandPort } from '../port/out/UserDbCommandPort';
+import { GetUsersQuery } from '../port/in/user/UserUseCase';
 import { UserDbQueryPort } from '../port/out/UserDbQueryPort';
 
 jest.mock('bcrypt');
@@ -14,7 +12,6 @@ jest.mock('bcrypt');
 describe('UserService', () => {
   let service: UserService;
   let queryPortMock: jest.Mocked<UserDbQueryPort>;
-  let commandPortMock: jest.Mocked<UserDbCommandPort>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -33,7 +30,6 @@ describe('UserService', () => {
 
     service = module.get<UserService>(UserService);
     queryPortMock = module.get<jest.Mocked<UserDbQueryPort>>('UserGateway');
-    commandPortMock = module.get<jest.Mocked<UserDbCommandPort>>('UserGateway');
   });
 
   it('should be defined', () => {
@@ -81,28 +77,6 @@ describe('UserService', () => {
       expect(result).toEqual({ items: [user], nextCursor: undefined, hasMore: false });
       expect(queryPortMock.getUsers).toHaveBeenCalledTimes(1);
       expect(queryPortMock.getUsers).toHaveBeenCalledWith(query);
-    });
-  });
-
-  describe('updateUserPassword', () => {
-    it('사용자 비밀번호를 변경할 수 있다', async () => {
-      // given
-      const hashedPassword = 'hashed-password';
-      (bcrypt.hash as jest.Mock).mockResolvedValue(hashedPassword);
-      commandPortMock.updateUserPassword.mockResolvedValue(true);
-
-      const userId = userMockData.id;
-      const command: UpdateUserPasswordCommand = {
-        newPassword: 'new-password',
-      };
-
-      // when
-      const result = await service.updateUserPassword(userId, command);
-
-      // then
-      expect(result).toBe(true);
-      expect(commandPortMock.updateUserPassword).toHaveBeenCalledTimes(1);
-      expect(commandPortMock.updateUserPassword).toHaveBeenCalledWith(userId, hashedPassword);
     });
   });
 });

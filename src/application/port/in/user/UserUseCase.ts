@@ -1,13 +1,4 @@
-import {
-  IsDate,
-  IsEmail,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsDate, IsEmail, IsEnum, IsOptional } from 'class-validator';
 
 import { UsersOrderBy } from './UsersOrderBy';
 import { SwaggerDto } from '../../../../common/decorators/swagger-dto.decorator';
@@ -37,17 +28,7 @@ export class GetUsersQuery extends CursorPaginationQuery {
   order: Order = Order.DESC;
 }
 
-@SwaggerDto()
-export class UpdateUserPasswordCommand {
-  @MinLength(8)
-  @MaxLength(20)
-  @IsNotEmpty()
-  @IsString()
-  newPassword: string;
-}
-
 export interface UserUseCase {
   getUserById(id: number): Promise<User>;
   getUsers(query: GetUsersQuery): Promise<CursorResult<UserListItem>>;
-  updateUserPassword(userId: number, body: UpdateUserPasswordCommand): Promise<boolean>;
 }

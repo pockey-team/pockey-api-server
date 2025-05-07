@@ -17,7 +17,6 @@ export const mapToUserCredential = (dbEntity: UserDbEntity): UserCredential => {
   return {
     id: dbEntity.id,
     email: dbEntity.email,
-    password: dbEntity.password,
   };
 };
 

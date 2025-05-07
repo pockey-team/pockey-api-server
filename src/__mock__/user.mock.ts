@@ -11,7 +11,6 @@ export const userMockData: Readonly<User> = {
 export const userCredentialMockData: Readonly<UserCredential> = {
   id: 1,
   email: 'test@test.com',
-  password: 'hashedPassword',
 };
 
 export const userListItemMockData: Readonly<UserListItem> = {

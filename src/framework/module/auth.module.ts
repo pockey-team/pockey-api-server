@@ -28,6 +28,6 @@ import { JwtStrategy } from '../auth/strategy';
     { provide: 'AuthUseCase', useClass: AuthService },
     { provide: 'UserGateway', useClass: UserGateway },
   ],
-  exports: [JwtModule, AuthService],
+  exports: [JwtModule],
 })
 export class AuthModule {}

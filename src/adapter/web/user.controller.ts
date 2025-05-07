@@ -1,11 +1,7 @@
-import { Body, Controller, Get, Inject, Param, Patch, Query } from '@nestjs/common';
+import { Controller, Get, Inject, Param, Query } from '@nestjs/common';
 
 import { CursorResult } from '../../application/common/types/CursorResult';
-import {
-  GetUsersQuery,
-  UpdateUserPasswordCommand,
-  UserUseCase,
-} from '../../application/port/in/user/UserUseCase';
+import { GetUsersQuery, UserUseCase } from '../../application/port/in/user/UserUseCase';
 import { User, UserListItem } from '../../domain/user';
 
 @Controller()
@@ -23,13 +19,5 @@ export class UserController {
   @Get()
   async getUsers(@Query() query: GetUsersQuery): Promise<CursorResult<UserListItem>> {
     return this.userUseCase.getUsers(query);
-  }
-
-  @Patch('/:userId/password')
-  async updateUserPassword(
-    @Param('userId') userId: number,
-    @Body() body: UpdateUserPasswordCommand,
-  ): Promise<boolean> {
-    return this.userUseCase.updateUserPassword(userId, body);
   }
 }

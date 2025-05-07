@@ -14,7 +14,6 @@ export class User {
 export class UserCredential {
   id: number;
   email?: string;
-  password?: string;
 }
 
 export class UserListItem {

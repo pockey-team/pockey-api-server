@@ -1,16 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-import { comparePassword, hashPassword } from '../../domain/auth/password';
+import { UserDbEntity } from '../../adapter/db/user.entity';
 import { IToken } from '../../domain/auth/token';
 import { UserRole } from '../../domain/user';
-import { InvalidPasswordException, InvalidRefreshTokenException } from '../common/error/exception';
-import {
-  AuthUseCase,
-  LoginCommand,
-  RefreshTokenCommand,
-  UpdatePasswordCommand,
-} from '../port/in/auth/AuthUseCase';
+import { InvalidRefreshTokenException } from '../common/error/exception';
+import { AuthUseCase, RefreshTokenCommand, SocialLoginCommand } from '../port/in/auth/AuthUseCase';
 import { UserDbCommandPort } from '../port/out/UserDbCommandPort';
 import { UserDbQueryPort } from '../port/out/UserDbQueryPort';
 
@@ -24,15 +19,22 @@ export class AuthService implements AuthUseCase {
     private readonly userDbCommandPort: UserDbCommandPort,
   ) {}
 
-  async login(command: LoginCommand): Promise<IToken> {
-    const userCredential = await this.userDbQueryPort.getUserForLogin(command.email);
+  async loginWithSocial(command: SocialLoginCommand): Promise<IToken> {
+    const user = await this.userDbQueryPort.getUserBySnsId(command.snsId);
 
-    const isValid = await comparePassword(command.password, userCredential.password!);
-    if (!isValid) {
-      throw new InvalidPasswordException();
+    if (user) {
+      return this.generateTokens(user.id);
     }
 
-    return this.generateTokens(userCredential.id);
+    const newUser = new UserDbEntity();
+    newUser.snsId = command.snsId;
+    newUser.nickname = command.nickname;
+    newUser.profileImageUrl = command.profileImageUrl;
+    newUser.role = UserRole.USER;
+    newUser.createdAt = new Date();
+
+    await this.userDbCommandPort.save(newUser);
+    return this.generateTokens(newUser.id);
   }
 
   async refreshToken(command: RefreshTokenCommand): Promise<IToken> {
@@ -43,18 +45,6 @@ export class AuthService implements AuthUseCase {
     }
 
     return this.generateTokens(command.userId);
-  }
-
-  async updatePassword(command: UpdatePasswordCommand): Promise<boolean> {
-    const userCredential = await this.userDbQueryPort.getUserForLogin(command.email);
-
-    const isValid = await comparePassword(command.currentPassword, userCredential.password!);
-    if (!isValid) {
-      throw new InvalidPasswordException();
-    }
-
-    const hashedPassword = await hashPassword(command.newPassword);
-    return this.userDbCommandPort.updateUserPassword(userCredential.id, hashedPassword);
   }
 
   public generateTokens(userId: number): IToken {

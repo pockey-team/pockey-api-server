@@ -1,6 +1,8 @@
+import { EntityManager } from '@mikro-orm/core';
 import { EntityRepository, QueryBuilder } from '@mikro-orm/mysql';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { UserDbCommandPort } from 'src/application/port/out/UserDbCommandPort';
 
 import { UserDbEntity } from './user.entity';
 import { mapToUser, mapToUserCredential, mapToUserListItem } from './user.mapper';
@@ -8,7 +10,6 @@ import { Order } from '../../application/common/enum/Order';
 import { UserNotFoundException } from '../../application/common/error/exception';
 import { CursorResult } from '../../application/common/types/CursorResult';
 import { GetUsersQuery } from '../../application/port/in/user/UserUseCase';
-import { UserDbCommandPort } from '../../application/port/out/UserDbCommandPort';
 import { UserDbQueryPort } from '../../application/port/out/UserDbQueryPort';
 import { User, UserCredential, UserListItem, UserRole } from '../../domain/user';
 
@@ -17,6 +18,7 @@ export class UserGateway implements UserDbQueryPort, UserDbCommandPort {
   constructor(
     @InjectRepository(UserDbEntity)
     private readonly userRepository: EntityRepository<UserDbEntity>,
+    private readonly em: EntityManager,
   ) {}
 
   async getUserById(id: number): Promise<User> {
@@ -26,6 +28,15 @@ export class UserGateway implements UserDbQueryPort, UserDbCommandPort {
     }
 
     return mapToUser(user);
+  }
+
+  async getUserBySnsId(snsId: string): Promise<UserDbEntity | null> {
+    const user = await this.userRepository.findOne({ snsId });
+    return user ? mapToUser(user) : null;
+  }
+
+  async save(user: UserDbEntity): Promise<void> {
+    await this.em.persistAndFlush(user);
   }
 
   async getUserForLogin(email: string): Promise<UserCredential> {
@@ -60,21 +71,6 @@ export class UserGateway implements UserDbQueryPort, UserDbCommandPort {
       limit,
       orderByField,
     );
-  }
-
-  async updateUserPassword(id: number, password: string): Promise<boolean> {
-    await this.findUserOrFail(id);
-    await this.userRepository.nativeUpdate({ id }, { password });
-    return true;
-  }
-
-  private async findUserOrFail(userId: number): Promise<UserDbEntity> {
-    const user = await this.userRepository.findOne(userId);
-    if (!user) {
-      throw new NotFoundException();
-    }
-
-    return user;
   }
 
   private applyFilters(qb: QueryBuilder<UserDbEntity, 'user'>, query: GetUsersQuery): void {
