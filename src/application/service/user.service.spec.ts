@@ -1,10 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { UserService } from './user.service';
-import { userListItemMockData, userMockData } from '../../__mock__';
-import { Order } from '../common/enum/Order';
-import { UsersOrderBy } from '../port/in/user/UsersOrderBy';
-import { GetUsersQuery } from '../port/in/user/UserUseCase';
+import { userMockData } from '../../__mock__';
 import { UserDbQueryPort } from '../port/out/UserDbQueryPort';
 
 jest.mock('bcrypt');
@@ -51,32 +48,6 @@ describe('UserService', () => {
       expect(result).toEqual(user);
       expect(queryPortMock.getUserById).toHaveBeenCalledTimes(1);
       expect(queryPortMock.getUserById).toHaveBeenCalledWith(id);
-    });
-  });
-
-  describe('getUsers', () => {
-    it('사용자 목록을 조회할 수 있다', async () => {
-      // given
-      const user = userListItemMockData;
-      queryPortMock.getUsers.mockResolvedValue({
-        items: [user],
-        nextCursor: undefined,
-        hasMore: false,
-      });
-
-      const query: GetUsersQuery = {
-        limit: 10,
-        orderBy: UsersOrderBy.ID,
-        order: Order.ASC,
-      };
-
-      // when
-      const result = await service.getUsers(query);
-
-      // then
-      expect(result).toEqual({ items: [user], nextCursor: undefined, hasMore: false });
-      expect(queryPortMock.getUsers).toHaveBeenCalledTimes(1);
-      expect(queryPortMock.getUsers).toHaveBeenCalledWith(query);
     });
   });
 });

@@ -3,23 +3,38 @@ export enum UserRole {
 }
 
 export class User {
-  id: number;
+  id?: number;
+  snsId: string;
   email?: string;
   role: UserRole;
-  profileImageUrl?: string;
-  nickname?: string;
+  profileImageUrl: string;
+  nickname: string;
   createdAt: Date;
-}
 
-export class UserCredential {
-  id: number;
-  email?: string;
-}
+  constructor(
+    snsId: string,
+    nickname: string,
+    profileImageUrl: string,
+    email?: string,
+    role: UserRole = UserRole.USER,
+    createdAt: Date = new Date(),
+    id?: number,
+  ) {
+    this.snsId = snsId;
+    this.nickname = nickname;
+    this.profileImageUrl = profileImageUrl;
+    this.email = email;
+    this.role = role;
+    this.createdAt = createdAt;
+    this.id = id;
+  }
 
-export class UserListItem {
-  id: number;
-  email?: string;
-  role: UserRole;
-  nickname?: string;
-  createdAt: Date;
+  static createFromSocialLogin(
+    snsId: string,
+    nickname: string,
+    profileImageUrl: string,
+    email?: string,
+  ): User {
+    return new User(snsId, nickname, profileImageUrl, email);
+  }
 }

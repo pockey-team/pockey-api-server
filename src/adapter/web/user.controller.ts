@@ -1,8 +1,10 @@
-import { Controller, Get, Inject, Param, Query } from '@nestjs/common';
+import { Controller, Get, Inject, Param, UseGuards } from '@nestjs/common';
 
-import { CursorResult } from '../../application/common/types/CursorResult';
-import { GetUsersQuery, UserUseCase } from '../../application/port/in/user/UserUseCase';
-import { User, UserListItem } from '../../domain/user';
+import { UserUseCase } from '../../application/port/in/user/UserUseCase';
+import { UserProfileResponse } from '../../application/service/UserProfileResponse';
+import { GetUser } from '../../common/decorators/get-user.decorator';
+import { User } from '../../domain/user';
+import { JwtAuthGuard } from '../../framework/auth/guard/jwt-auth.guard';
 
 @Controller()
 export class UserController {
@@ -16,8 +18,10 @@ export class UserController {
     return this.userUseCase.getUserById(id);
   }
 
-  @Get()
-  async getUsers(@Query() query: GetUsersQuery): Promise<CursorResult<UserListItem>> {
-    return this.userUseCase.getUsers(query);
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async getMyProfile(@GetUser() user: User): Promise<UserProfileResponse> {
+    const fulluser = await this.userUseCase.getUserById(user.id!);
+    return new UserProfileResponse(fulluser);
   }
 }

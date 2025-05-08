@@ -7,6 +7,7 @@ import { UserGateway } from 'src/adapter/db/user.gateway';
 import { AuthService } from 'src/application/service/auth.service';
 
 import { AuthController } from '../../adapter/web/auth.controller';
+import { JwtAuthGuard } from '../auth/guard';
 import { JwtStrategy } from '../auth/strategy';
 
 @Module({
@@ -24,10 +25,10 @@ import { JwtStrategy } from '../auth/strategy';
   controllers: [AuthController],
   providers: [
     JwtStrategy,
-    AuthService,
+    JwtAuthGuard,
     { provide: 'AuthUseCase', useClass: AuthService },
     { provide: 'UserGateway', useClass: UserGateway },
   ],
-  exports: [JwtModule],
+  exports: [JwtModule, JwtAuthGuard],
 })
 export class AuthModule {}
