@@ -1,5 +1,5 @@
-import { UserDbEntity } from '../../../adapter/db/user.entity';
+import { User } from 'src/domain/user';
 
 export interface UserDbCommandPort {
-  save(user: UserDbEntity): Promise<void>;
+  createUser(user: User): Promise<number>;
 }

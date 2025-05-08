@@ -9,19 +9,19 @@ export class UserDbEntity {
   @PrimaryKey()
   id: number;
 
-  @Property({ nullable: true })
+  @Property()
   @Unique()
-  snsId?: string;
+  snsId: string;
 
   @Unique({ name: 'user_email_key' })
   @Property({ nullable: true })
   email?: string;
 
-  @Property({ nullable: true })
-  nickname?: string;
+  @Property()
+  nickname: string;
 
-  @Property({ nullable: true, fieldName: 'profile_url' })
-  profileImageUrl?: string;
+  @Property({ fieldName: 'profile_url' })
+  profileImageUrl: string;
 
   @Enum({ items: () => UserRole })
   role: UserRole;

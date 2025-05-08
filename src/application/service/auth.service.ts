@@ -1,9 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-import { UserDbEntity } from '../../adapter/db/user.entity';
 import { IToken } from '../../domain/auth/token';
-import { UserRole } from '../../domain/user';
+import { User, UserRole } from '../../domain/user';
 import { InvalidRefreshTokenException } from '../common/error/exception';
 import { AuthUseCase, RefreshTokenCommand, SocialLoginCommand } from '../port/in/auth/AuthUseCase';
 import { UserDbCommandPort } from '../port/out/UserDbCommandPort';
@@ -23,18 +22,18 @@ export class AuthService implements AuthUseCase {
     const user = await this.userDbQueryPort.getUserBySnsId(command.snsId);
 
     if (user) {
-      return this.generateTokens(user.id);
+      return this.generateTokens(user.id!);
     }
 
-    const newUser = new UserDbEntity();
-    newUser.snsId = command.snsId;
-    newUser.nickname = command.nickname;
-    newUser.profileImageUrl = command.profileImageUrl;
-    newUser.role = UserRole.USER;
-    newUser.createdAt = new Date();
+    const newUser = User.createFromSocialLogin(
+      command.snsId,
+      command.nickname,
+      command.profileImageUrl,
+      command.email,
+    );
 
-    await this.userDbCommandPort.save(newUser);
-    return this.generateTokens(newUser.id);
+    const newUserId = await this.userDbCommandPort.createUser(newUser);
+    return this.generateTokens(newUserId);
   }
 
   async refreshToken(command: RefreshTokenCommand): Promise<IToken> {
@@ -49,7 +48,7 @@ export class AuthService implements AuthUseCase {
 
   public generateTokens(userId: number): IToken {
     return {
-      accessToken: this.jwtService.sign({ id: userId, role: UserRole.USER }, { expiresIn: '1h' }),
+      accessToken: this.jwtService.sign({ sub: userId, role: UserRole.USER }, { expiresIn: '1h' }),
       refreshToken: this.jwtService.sign(
         { id: userId, role: UserRole.USER, refreshToken: true },
         { expiresIn: '7d' },

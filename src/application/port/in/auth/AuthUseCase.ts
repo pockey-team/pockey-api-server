@@ -1,4 +1,4 @@
-import { IsInt, IsString } from 'class-validator';
+import { IsEmail, IsInt, IsOptional, IsString } from 'class-validator';
 
 import { SwaggerDto } from '../../../../common/decorators/swagger-dto.decorator';
 import { IToken } from '../../../../domain/auth/token';
@@ -22,6 +22,10 @@ export class SocialLoginCommand {
 
   @IsString()
   profileImageUrl: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
 }
 
 export interface AuthUseCase {

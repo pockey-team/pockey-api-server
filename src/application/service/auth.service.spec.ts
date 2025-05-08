@@ -1,8 +1,8 @@
 import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserDbEntity } from 'src/adapter/db';
 
 import { AuthService } from './auth.service';
+import { userMockData } from '../../__mock__/user.mock';
 import { UserRole } from '../../domain/user';
 import { InvalidRefreshTokenException } from '../common/error/exception';
 import { RefreshTokenCommand, SocialLoginCommand } from '../port/in/auth/AuthUseCase';
@@ -22,19 +22,11 @@ describe('AuthService', () => {
       providers: [
         AuthService,
         {
-          provide: 'UserDbQueryPort',
-          useExisting: 'UserGateway',
-        },
-        {
-          provide: 'UserDbCommandPort',
-          useExisting: 'UserGateway',
-        },
-        {
           provide: 'UserGateway',
           useValue: {
             getUserForLogin: jest.fn(),
             getUserBySnsId: jest.fn(),
-            save: jest.fn(),
+            createUser: jest.fn(),
           },
         },
         {
@@ -62,26 +54,16 @@ describe('AuthService', () => {
   });
 
   describe('loginWithSocial', () => {
-    it('기존 snsId가 있으면 토큰을 반환한다.', async () => {
+    it('snsId로 가입한 계정이 있는 경우 로그인에 성공한다', async () => {
       // given
-      const snsId = 'sns-123';
-      const user: UserDbEntity = {
-        id: 1,
-        snsId: 'sns-123',
-        nickname: '혜원',
-        profileImageUrl: 'http://...',
-        role: UserRole.USER,
-        createdAt: new Date(),
-      };
-
-      queryPortMock.getUserBySnsId.mockResolvedValue(user);
-      jwtService.sign.mockReturnValueOnce('accessToken');
-      jwtService.sign.mockReturnValueOnce('refreshToken');
+      queryPortMock.getUserBySnsId.mockResolvedValue(userMockData);
+      jwtService.sign.mockReturnValueOnce('accessToken').mockReturnValueOnce('refreshToken');
 
       const command: SocialLoginCommand = {
-        snsId,
-        nickname: '혜원',
-        profileImageUrl: 'http://image.jpg',
+        snsId: userMockData.snsId,
+        nickname: '무시될 유저',
+        profileImageUrl: 'http://irrelevant.com/image.jpg',
+        email: 'irrelevant@email.com',
       };
 
       // when
@@ -89,21 +71,24 @@ describe('AuthService', () => {
 
       // then
       expect(result).toEqual({ accessToken: 'accessToken', refreshToken: 'refreshToken' });
-      expect(queryPortMock.getUserBySnsId).toHaveBeenCalledWith(snsId);
-      expect(commandPortMock.save).not.toHaveBeenCalled();
+      expect(queryPortMock.getUserBySnsId).toHaveBeenCalledTimes(1);
+      expect(queryPortMock.getUserBySnsId).toHaveBeenCalledWith(userMockData.snsId);
+      expect(commandPortMock.createUser).not.toHaveBeenCalled();
     });
-    it('snsId가 없으면 새 유저를 생성하고 저장한 뒤 토큰을 반환한다', async () => {
+    it('snsId로 가입한 계정이 없는 경우 회원가입에 성공한다', async () => {
       // given
-      queryPortMock.getUserBySnsId.mockResolvedValue(null);
-      commandPortMock.save.mockResolvedValue();
+      queryPortMock.getUserBySnsId.mockResolvedValueOnce(null);
 
-      jwtService.sign.mockReturnValueOnce('accessToken');
-      jwtService.sign.mockReturnValueOnce('refreshToken');
+      commandPortMock.createUser.mockResolvedValue(2);
+      jwtService.sign.mockReturnValueOnce('accessToken').mockReturnValueOnce('refreshToken');
+
+      const newSnsId = 'sns-new-456';
 
       const command: SocialLoginCommand = {
-        snsId: 'sns-456',
-        nickname: '혜원',
-        profileImageUrl: 'http://new-image.jpg',
+        snsId: newSnsId,
+        nickname: '새로운 유저',
+        profileImageUrl: 'http://new.image.jpg',
+        email: 'new@email.com',
       };
 
       // when
@@ -111,8 +96,15 @@ describe('AuthService', () => {
 
       // then
       expect(result).toEqual({ accessToken: 'accessToken', refreshToken: 'refreshToken' });
-      expect(queryPortMock.getUserBySnsId).toHaveBeenCalledWith('sns-456');
-      expect(commandPortMock.save).toHaveBeenCalledTimes(1);
+      expect(queryPortMock.getUserBySnsId).toHaveBeenCalledTimes(1);
+      expect(queryPortMock.getUserBySnsId).toHaveBeenCalledWith(newSnsId);
+      expect(commandPortMock.createUser).toHaveBeenCalledTimes(1);
+
+      const createdUser = commandPortMock.createUser.mock.calls[0][0];
+      expect(createdUser.snsId).toBe(command.snsId);
+      expect(createdUser.nickname).toBe(command.nickname);
+      expect(createdUser.profileImageUrl).toBe(command.profileImageUrl);
+      expect(createdUser.email).toBe(command.email);
     });
   });
 
