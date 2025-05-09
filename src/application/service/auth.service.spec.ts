@@ -63,7 +63,6 @@ describe('AuthService', () => {
         snsId: userMockData.snsId,
         nickname: '무시될 유저',
         profileImageUrl: 'http://irrelevant.com/image.jpg',
-        email: 'irrelevant@email.com',
       };
 
       // when
@@ -88,7 +87,6 @@ describe('AuthService', () => {
         snsId: newSnsId,
         nickname: '새로운 유저',
         profileImageUrl: 'http://new.image.jpg',
-        email: 'new@email.com',
       };
 
       // when
@@ -96,15 +94,15 @@ describe('AuthService', () => {
 
       // then
       expect(result).toEqual({ accessToken: 'accessToken', refreshToken: 'refreshToken' });
-      expect(queryPortMock.getUserBySnsId).toHaveBeenCalledTimes(1);
-      expect(queryPortMock.getUserBySnsId).toHaveBeenCalledWith(newSnsId);
-      expect(commandPortMock.createUser).toHaveBeenCalledTimes(1);
 
-      const createdUser = commandPortMock.createUser.mock.calls[0][0];
-      expect(createdUser.snsId).toBe(command.snsId);
-      expect(createdUser.nickname).toBe(command.nickname);
-      expect(createdUser.profileImageUrl).toBe(command.profileImageUrl);
-      expect(createdUser.email).toBe(command.email);
+      expect(queryPortMock.getUserBySnsId).toHaveBeenCalledWith(command.snsId);
+      expect(commandPortMock.createUser).toHaveBeenCalledWith(
+        expect.objectContaining({
+          snsId: command.snsId,
+          nickname: command.nickname,
+          profileImageUrl: command.profileImageUrl,
+        }),
+      );
     });
   });
 
@@ -127,7 +125,7 @@ describe('AuthService', () => {
       expect(jwtService.verify).toHaveBeenCalledWith(command.refreshToken);
       expect(jwtService.sign).toHaveBeenCalledTimes(2);
       expect(jwtService.sign).toHaveBeenCalledWith(
-        { id: userId, role: UserRole.USER },
+        { sub: userId, role: UserRole.USER },
         { expiresIn: '1h' },
       );
       expect(jwtService.sign).toHaveBeenCalledWith(

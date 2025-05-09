@@ -1,4 +1,4 @@
-import { User, UserRole } from 'src/domain/user';
+import { User } from 'src/domain/user';
 
 import { UserDbEntity } from './user.entity';
 
@@ -20,7 +20,6 @@ export const mapToUserDbEntity = (user: User): UserDbEntity => {
   entity.nickname = user.nickname;
   entity.profileImageUrl = user.profileImageUrl;
   entity.email = user.email;
-  entity.role = user.role ?? UserRole.USER;
-  entity.createdAt = new Date();
+  entity.role = user.role;
   return entity;
 };

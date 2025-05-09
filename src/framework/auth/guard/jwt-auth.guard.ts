@@ -44,15 +44,7 @@ export class JwtAuthGuard implements CanActivate {
 
   private async validateToken(token: string) {
     try {
-      const payload = await this.jwtService.verify(token);
-
-      return {
-        id: payload.sub,
-        role: payload.role,
-        nickname: payload.nickname,
-        profileImageUrl: payload.profileImageUrl,
-        refreshToken: payload.refreshToken ?? null,
-      };
+      return await this.jwtService.verify(token);
     } catch (error) {
       if (error instanceof TokenExpiredError) {
         throw new TokenExpiredException();
@@ -63,6 +55,13 @@ export class JwtAuthGuard implements CanActivate {
 
   private setUserToRequest(context: ExecutionContext, payload: any): void {
     const request = context.switchToHttp().getRequest();
-    request.user = { ...payload, refreshToken: payload.refreshToken };
+
+    const user = {
+      id: payload.sub,
+      role: payload.role,
+      refreshToken: payload.refreshToken ?? null,
+    };
+
+    request.user = user;
   }
 }

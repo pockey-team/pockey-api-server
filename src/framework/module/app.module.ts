@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { RouterModule } from '@nestjs/core';
 
+import { AuthGuardModule } from './auth.guard.module';
 import { AuthModule } from './auth.module';
 import { CacheModule } from './cache.module';
 import { HealthModule } from './health.module';
@@ -20,6 +21,7 @@ import createMikroOrmConfig from '../config/mikro-orm.config';
     PostModule,
     UserModule,
     RecommendSessionModule,
+    AuthGuardModule,
     MikroOrmModule.forRootAsync({
       useFactory: async () => await createMikroOrmConfig(),
     }),

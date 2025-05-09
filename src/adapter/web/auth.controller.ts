@@ -1,4 +1,5 @@
 import { Body, Controller, Inject, Post } from '@nestjs/common';
+import { Public } from 'src/framework/auth/decorator/public.decorator';
 
 import { InvalidRefreshTokenException } from '../../application/common/error/exception';
 import { AuthUseCase, SocialLoginCommand } from '../../application/port/in/auth/AuthUseCase';
@@ -12,6 +13,7 @@ export class AuthController {
     private readonly authUseCase: AuthUseCase,
   ) {}
 
+  @Public()
   @Post('login/social')
   async loginWithSocial(@Body() body: SocialLoginCommand): Promise<IToken> {
     return this.authUseCase.loginWithSocial(body);

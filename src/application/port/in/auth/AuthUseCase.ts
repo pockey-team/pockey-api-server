@@ -1,4 +1,4 @@
-import { IsEmail, IsInt, IsOptional, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString } from 'class-validator';
 
 import { SwaggerDto } from '../../../../common/decorators/swagger-dto.decorator';
 import { IToken } from '../../../../domain/auth/token';
@@ -15,17 +15,16 @@ export class RefreshTokenCommand {
 @SwaggerDto()
 export class SocialLoginCommand {
   @IsString()
+  @IsNotEmpty()
   snsId: string;
 
   @IsString()
+  @IsNotEmpty()
   nickname: string;
 
   @IsString()
+  @IsNotEmpty()
   profileImageUrl: string;
-
-  @IsOptional()
-  @IsEmail()
-  email?: string;
 }
 
 export interface AuthUseCase {
