@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { RecommendSessionService } from './recommend-session.service';
 import {
   commonQuestionMockData,
   recommendSessionMockData,
@@ -9,9 +8,9 @@ import {
 } from '../../__mock__';
 import { RecommendSession, RecommendSessionStep } from '../../domain/recommend-session';
 import {
-  RecommendSessionNotFoundException,
   RecommendSessionAlreadyEndedException,
   RecommendSessionInvalidAnswerException,
+  RecommendSessionNotFoundException,
 } from '../common/error/exception/recommend-session.exception';
 import {
   StartSessionCommand,
@@ -20,6 +19,7 @@ import {
 import { CommonQuestionDbQueryPort } from '../port/out/CommonQuestionDbQueryPort';
 import { RecommendSessionDbCommandPort } from '../port/out/RecommendSessionDbCommandPort';
 import { RecommendSessionDbQueryPort } from '../port/out/RecommendSessionDbQueryPort';
+import { RecommendSessionService } from './recommend-session.service';
 
 describe('RecommendSessionService', () => {
   let service: RecommendSessionService;
