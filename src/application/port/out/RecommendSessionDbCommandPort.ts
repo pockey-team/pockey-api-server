@@ -3,6 +3,7 @@ import {
   RecommendSessionResult,
   RecommendSessionStep,
 } from '../../../domain/recommend-session';
+import { StartSessionCommand } from '../in/recommend-session/RecommendSessionUseCase';
 
 export class AddStepCommand {
   sessionId: string;
@@ -18,7 +19,7 @@ export class CreateResultCommand {
 }
 
 export interface RecommendSessionDbCommandPort {
-  createSession(userId?: number): Promise<RecommendSession>;
+  startSession(command: StartSessionCommand): Promise<RecommendSession>;
   createStep(command: AddStepCommand): Promise<RecommendSessionStep>;
   createResult(command: CreateResultCommand): Promise<RecommendSessionResult>;
   updateAnswer(stepId: number, answer: string): Promise<void>;

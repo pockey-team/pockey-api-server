@@ -15,5 +15,6 @@ export const ERROR_MESSAGES = {
   RECOMMEND_SESSION: {
     ALREADY_ENDED: '이미 종료된 세션입니다.',
     NOT_FOUND: '세션을 찾을 수 없습니다.',
+    INVALID_ANSWER: '유효하지 않은 답변입니다.',
   },
 } as const;

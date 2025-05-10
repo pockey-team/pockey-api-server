@@ -10,6 +10,7 @@ import {
 export const mapToRecommendSession = (dbEntity: RecommendSessionDbEntity): RecommendSession => {
   return {
     id: dbEntity.id,
+    receiverName: dbEntity.receiverName,
     steps:
       dbEntity.steps && dbEntity.steps.length > 0
         ? dbEntity.steps.map(step => mapToRecommendSessionStep(step))

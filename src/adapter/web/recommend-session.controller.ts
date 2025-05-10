@@ -2,6 +2,7 @@ import { Controller, Inject, Post, Delete, Param, Body } from '@nestjs/common';
 
 import {
   RecommendSessionUseCase,
+  StartSessionRequest,
   SubmitAnswerRequest,
 } from '../../application/port/in/recommend-session/RecommendSessionUseCase';
 
@@ -13,8 +14,8 @@ export class RecommendSessionController {
   ) {}
 
   @Post()
-  async startSession() {
-    return this.recommendSessionUseCase.startSession();
+  async startSession(@Body() command: StartSessionRequest) {
+    return this.recommendSessionUseCase.startSession(command);
   }
 
   @Post(':sessionId/answer')

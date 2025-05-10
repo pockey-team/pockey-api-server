@@ -1,5 +1,6 @@
 export class RecommendSession {
   id: string;
+  receiverName: string;
   steps: RecommendSessionStep[];
   result?: RecommendSessionResult;
   endedAt?: Date;

@@ -6,6 +6,7 @@ import {
 
 export const recommendSessionMockData: Readonly<RecommendSession> = {
   id: 'recommend-session-uuid-v7',
+  receiverName: '홍길동',
   steps: [],
   result: undefined,
   endedAt: undefined,

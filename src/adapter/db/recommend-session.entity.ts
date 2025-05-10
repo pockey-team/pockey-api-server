@@ -19,6 +19,12 @@ export class RecommendSessionDbEntity {
   @Property({ nullable: true })
   userId?: number;
 
+  @Property()
+  deviceId: string;
+
+  @Property()
+  receiverName: string;
+
   @Property({ nullable: true })
   endedAt?: Date;
 
