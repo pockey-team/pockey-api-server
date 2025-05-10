@@ -14,8 +14,8 @@ export class CommonQuestionGateway implements CommonQuestionDbQueryPort {
     private readonly commonQuestionRepository: EntityRepository<CommonQuestionDbEntity>,
   ) {}
 
-  async getCommonQuestionByStep(step: number): Promise<CommonQuestion | null> {
-    const commonQuestion = await this.commonQuestionRepository.findOne({ step });
-    return commonQuestion ? mapToCommonQuestion(commonQuestion) : null;
+  async getCommonQuestionsByStep(step: number): Promise<CommonQuestion[]> {
+    const commonQuestions = await this.commonQuestionRepository.find({ step });
+    return commonQuestions.map(mapToCommonQuestion);
   }
 }
