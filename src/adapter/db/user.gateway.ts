@@ -2,7 +2,6 @@ import { EntityManager } from '@mikro-orm/core';
 import { EntityRepository } from '@mikro-orm/mysql';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable } from '@nestjs/common';
-import { CreateUserCommand } from 'src/application/port/in/user/CreateUserCommand';
 import { UserDbCommandPort } from 'src/application/port/out/UserDbCommandPort';
 
 import { UserDbEntity } from './user.entity';
@@ -33,9 +32,8 @@ export class UserGateway implements UserDbQueryPort, UserDbCommandPort {
     return user ? mapToUser(user) : null;
   }
 
-  async createUser(command: CreateUserCommand): Promise<number> {
-    const completeUser = new User(command.snsId, command.nickname, command.profileImageUrl);
-    const entity = mapToUserDbEntity(completeUser);
+  async createUser(user: User): Promise<number> {
+    const entity = mapToUserDbEntity(user);
     await this.em.persistAndFlush(entity);
     return entity.id;
   }

@@ -1,5 +1,5 @@
-import { CreateUserCommand } from '../in/user/CreateUserCommand';
+import { User } from 'src/domain/user';
 
 export interface UserDbCommandPort {
-  createUser(command: CreateUserCommand): Promise<number>;
+  createUser(user: User): Promise<number>;
 }

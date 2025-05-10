@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { User } from '../../domain/user';
+import { User, UserRole } from '../../domain/user';
 import { CreateUserCommand } from '../port/in/user/CreateUserCommand';
 import { UserUseCase } from '../port/in/user/UserUseCase';
 import { UserDbCommandPort } from '../port/out/UserDbCommandPort';
@@ -16,11 +16,7 @@ export class UserService implements UserUseCase {
   ) {}
 
   async createUser(command: CreateUserCommand): Promise<number> {
-    const user = User.createFromSocialLogin(
-      command.snsId,
-      command.nickname,
-      command.profileImageUrl,
-    );
+    const user = new User(command.snsId, command.nickname, command.profileImageUrl, UserRole.USER);
     return this.userDbCommandPort.createUser(user);
   }
 

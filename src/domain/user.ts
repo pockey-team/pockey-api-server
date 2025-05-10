@@ -5,7 +5,6 @@ export enum UserRole {
 export class User {
   id?: number;
   snsId: string;
-  email?: string;
   role: UserRole;
   profileImageUrl: string;
   nickname: string;
@@ -15,7 +14,6 @@ export class User {
     snsId: string,
     nickname: string,
     profileImageUrl: string,
-    email?: string,
     role: UserRole = UserRole.USER,
     createdAt: Date = new Date(),
     id?: number,
@@ -23,18 +21,8 @@ export class User {
     this.snsId = snsId;
     this.nickname = nickname;
     this.profileImageUrl = profileImageUrl;
-    this.email = email;
     this.role = role;
     this.createdAt = createdAt;
     this.id = id;
-  }
-
-  static createFromSocialLogin(
-    snsId: string,
-    nickname: string,
-    profileImageUrl: string,
-    email?: string,
-  ): User {
-    return new User(snsId, nickname, profileImageUrl, email);
   }
 }

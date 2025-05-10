@@ -6,7 +6,6 @@ export const mapToUser = (dbEntity: UserDbEntity): User => {
   return {
     id: dbEntity.id,
     snsId: dbEntity.snsId,
-    email: dbEntity.email,
     role: dbEntity.role,
     nickname: dbEntity.nickname,
     profileImageUrl: dbEntity.profileImageUrl,
@@ -19,7 +18,6 @@ export const mapToUserDbEntity = (user: User): UserDbEntity => {
   entity.snsId = user.snsId;
   entity.nickname = user.nickname;
   entity.profileImageUrl = user.profileImageUrl;
-  entity.email = user.email;
   entity.role = user.role;
   return entity;
 };
