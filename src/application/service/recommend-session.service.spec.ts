@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { RecommendSessionService } from './recommend-session.service';
 import {
   commonQuestionMockData,
   recommendSessionMockData,
@@ -19,7 +20,6 @@ import {
 import { CommonQuestionDbQueryPort } from '../port/out/CommonQuestionDbQueryPort';
 import { RecommendSessionDbCommandPort } from '../port/out/RecommendSessionDbCommandPort';
 import { RecommendSessionDbQueryPort } from '../port/out/RecommendSessionDbQueryPort';
-import { RecommendSessionService } from './recommend-session.service';
 
 describe('RecommendSessionService', () => {
   let service: RecommendSessionService;
