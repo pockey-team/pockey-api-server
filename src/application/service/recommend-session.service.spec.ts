@@ -101,7 +101,7 @@ describe('RecommendSessionService', () => {
   });
 
   describe('submitAnswer', () => {
-    it('답변을 제출하면 세번째 질문까지는 이름을 포함한 공통 질문을 반환한다.', async () => {
+    it('답변을 제출하면 네번째 질문까지는 이름을 포함한 공통 질문을 반환한다.', async () => {
       // given
       const session = recommendSessionMockData;
       queryPortMock.getSessionById.mockResolvedValue(session);
@@ -146,7 +146,7 @@ describe('RecommendSessionService', () => {
       expect(commandPortMock.createResult).not.toHaveBeenCalled();
     });
 
-    it('답변을 제출하면 네번째 질문에서는 랜덤 공통 질문을 반환한다.', async () => {
+    it('답변을 제출하면 다섯번째 질문에서는 랜덤 공통 질문을 반환한다.', async () => {
       // given
       const session = recommendSessionMockData;
       queryPortMock.getSessionById.mockResolvedValue(session);
@@ -161,18 +161,18 @@ describe('RecommendSessionService', () => {
       ]);
 
       const lastStep: RecommendSessionStep = {
-        id: 3,
+        id: 4,
         sessionId: session.id,
-        step: 3,
+        step: 4,
         question: '질문',
         options: ['옵션1', '옵션2', '옵션3', '옵션4'],
       };
       queryPortMock.getLastStep.mockResolvedValue(lastStep);
 
       const nextStep: RecommendSessionStep = {
-        id: 4,
+        id: 5,
         sessionId: session.id,
-        step: 4,
+        step: 5,
         question: '랜덤 질문1',
         options: ['옵션1', '옵션2', '옵션3', '옵션4'],
       };
@@ -197,24 +197,24 @@ describe('RecommendSessionService', () => {
       expect(commandPortMock.createResult).not.toHaveBeenCalled();
     });
 
-    it('답변을 제출하면 다섯번째 질문부터는 LLM 질문을 반환한다.', async () => {
+    it('답변을 제출하면 여섯번째 질문부터는 LLM 질문을 반환한다.', async () => {
       // given
       const session = recommendSessionMockData;
       queryPortMock.getSessionById.mockResolvedValue(session);
 
       const lastStep: RecommendSessionStep = {
-        id: 4,
+        id: 5,
         sessionId: session.id,
-        step: 4,
+        step: 5,
         question: '질문',
         options: ['옵션1', '옵션2', '옵션3', '옵션4'],
       };
       queryPortMock.getLastStep.mockResolvedValue(lastStep);
 
       const nextStep: RecommendSessionStep = {
-        id: 5,
+        id: 6,
         sessionId: session.id,
-        step: 5,
+        step: 6,
         question: 'LLM 질문',
         options: ['옵션1', '옵션2', '옵션3', '옵션4'],
       };

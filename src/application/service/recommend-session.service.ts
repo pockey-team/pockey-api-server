@@ -71,8 +71,9 @@ export class RecommendSessionService implements RecommendSessionUseCase {
       case 1:
       case 2:
       case 3:
-        return this.generateCommonQuestion(sessionId, receiverName, step);
       case 4:
+        return this.generateCommonQuestion(sessionId, receiverName, step);
+      case 5:
         return this.generateRandomCommonQuestion(sessionId, step);
       default:
         return this.generateLLMQuestion(sessionId);
