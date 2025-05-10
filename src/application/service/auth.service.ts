@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-import { comparePassword, hashPassword } from '../../domain/auth/password';
-import { IToken } from '../../domain/auth/token';
+import { IToken } from '../../domain/token';
 import { UserRole } from '../../domain/user';
 import { InvalidPasswordException, InvalidRefreshTokenException } from '../common/error/exception';
+import { comparePassword, hashPassword } from '../common/util/password';
 import {
   AuthUseCase,
   LoginCommand,

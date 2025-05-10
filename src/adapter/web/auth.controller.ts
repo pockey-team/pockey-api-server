@@ -6,7 +6,7 @@ import {
   LoginCommand,
   UpdatePasswordCommand,
 } from '../../application/port/in/auth/AuthUseCase';
-import { IToken } from '../../domain/auth/token';
+import { IToken } from '../../domain/token';
 import { Public } from '../../framework/auth/decorator/public.decorator';
 import { RequestInfo } from '../../framework/auth/decorator/request-info.decorator';
 

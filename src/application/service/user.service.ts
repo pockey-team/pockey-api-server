@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { hashPassword } from '../../domain/auth/password';
 import { User, UserListItem } from '../../domain/user';
 import { CursorResult } from '../common/types/CursorResult';
+import { hashPassword } from '../common/util/password';
 import { GetUsersQuery, UpdateUserPasswordCommand, UserUseCase } from '../port/in/user/UserUseCase';
 import { UserDbCommandPort } from '../port/out/UserDbCommandPort';
 import { UserDbQueryPort } from '../port/out/UserDbQueryPort';

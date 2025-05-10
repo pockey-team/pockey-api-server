@@ -1,7 +1,7 @@
 import { IsEmail, IsString } from 'class-validator';
 
 import { SwaggerDto } from '../../../../common/decorators/swagger-dto.decorator';
-import { IToken } from '../../../../domain/auth/token';
+import { IToken } from '../../../../domain/token';
 
 @SwaggerDto()
 export class LoginCommand {
