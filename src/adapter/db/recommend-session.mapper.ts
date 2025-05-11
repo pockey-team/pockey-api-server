@@ -29,6 +29,7 @@ export const mapToRecommendSessionStep = (
     step: dbEntity.step,
     question: dbEntity.question,
     options: dbEntity.options,
+    optionImages: dbEntity.optionImages,
     answer: dbEntity.answer,
   };
 };

@@ -12,6 +12,7 @@ export class RecommendSessionStep {
   step: number;
   question: string;
   options: string[];
+  optionImages?: string[];
   answer?: string;
 }
 

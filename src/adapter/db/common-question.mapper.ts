@@ -6,5 +6,6 @@ export const mapToCommonQuestion = (dbEntity: CommonQuestionDbEntity): CommonQue
     step: dbEntity.step,
     question: dbEntity.question,
     options: dbEntity.options,
+    optionImages: dbEntity.optionImages,
   };
 };

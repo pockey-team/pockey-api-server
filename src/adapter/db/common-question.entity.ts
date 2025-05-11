@@ -14,6 +14,9 @@ export class CommonQuestionDbEntity {
   @Property({ type: 'json' })
   options: string[];
 
+  @Property({ type: 'json', nullable: true })
+  optionImages?: string[];
+
   @Property({ onCreate: () => new Date() })
   createdAt: Date;
 }

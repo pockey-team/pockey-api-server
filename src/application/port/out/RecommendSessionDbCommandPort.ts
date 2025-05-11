@@ -9,6 +9,7 @@ export class AddStepCommand {
   sessionId: string;
   question: string;
   options: string[];
+  optionImages?: string[];
 }
 
 export class CreateResultCommand {

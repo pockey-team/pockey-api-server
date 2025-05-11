@@ -83,6 +83,7 @@ export class RecommendSessionGateway
     stepEntity.step = lastStep ? lastStep.step + 1 : 1;
     stepEntity.question = command.question;
     stepEntity.options = command.options;
+    stepEntity.optionImages = command.optionImages;
 
     session.steps?.add(stepEntity);
     await this.em.persistAndFlush(session);
