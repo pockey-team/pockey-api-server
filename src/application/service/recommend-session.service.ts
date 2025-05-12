@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import { OpenAiClient } from '../../adapter/llm/openai.client';
 import { RecommendSessionResult, RecommendSessionStep } from '../../domain/recommend-session';
 import {
   RecommendSessionAlreadyEndedException,
@@ -24,6 +25,8 @@ export class RecommendSessionService implements RecommendSessionUseCase {
     private readonly sessionDbCommandPort: RecommendSessionDbCommandPort,
     @Inject('CommonQuestionGateway')
     private readonly commonQuestionDbQueryPort: CommonQuestionDbQueryPort,
+
+    private readonly openAiClient: OpenAiClient,
   ) {}
 
   async startSession(command: StartSessionCommand): Promise<RecommendSessionStep> {
@@ -111,12 +114,16 @@ export class RecommendSessionService implements RecommendSessionUseCase {
 
   private async generateLLMQuestion(sessionId: string): Promise<RecommendSessionStep> {
     // TODO: LLM 통해 생성하도록 변경
-    const generatedQuestion = 'LLM 질문';
-    const generatedOptions = ['옵션1', '옵션2', '옵션3', '옵션4'];
+
+    const session = await this.sessionDbQueryPort.getSessionById(sessionId);
+    const input = session.steps
+      .map(step => `질문:${step.question}/선택지:${step.options.join('\n')}/답변:${step.answer}`)
+      .join('\n');
+
+    const llmRecommend = await this.openAiClient.generateQuestion(input);
     return this.sessionDbCommandPort.createStep({
       sessionId,
-      question: generatedQuestion,
-      options: generatedOptions,
+      ...llmRecommend,
     });
   }
 
