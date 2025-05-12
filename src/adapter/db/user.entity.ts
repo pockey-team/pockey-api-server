@@ -9,13 +9,9 @@ export class UserDbEntity {
   @PrimaryKey()
   id: number;
 
-  @Property()
   @Unique()
+  @Property()
   snsId: string;
-
-  @Unique({ name: 'user_email_key' })
-  @Property({ nullable: true })
-  email?: string;
 
   @Property()
   nickname: string;

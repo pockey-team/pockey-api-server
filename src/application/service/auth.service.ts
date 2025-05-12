@@ -2,10 +2,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 import { IToken } from '../../domain/auth/token';
-import { CreateUser } from '../../domain/create-user';
 import { UserRole } from '../../domain/user';
 import { InvalidRefreshTokenException } from '../common/error/exception';
-import { AuthUseCase, RefreshTokenCommand, SocialLoginCommand } from '../port/in/auth/AuthUseCase';
+import {
+  AuthUseCase,
+  CreateUserCommand,
+  RefreshTokenCommand,
+  SocialLoginCommand,
+} from '../port/in/auth/AuthUseCase';
 import { UserDbCommandPort } from '../port/out/UserDbCommandPort';
 import { UserDbQueryPort } from '../port/out/UserDbQueryPort';
 
@@ -26,7 +30,11 @@ export class AuthService implements AuthUseCase {
       return this.generateTokens(user.id!);
     }
 
-    const createUser = new CreateUser(command.snsId, command.nickname, command.profileImageUrl);
+    const createUser: CreateUserCommand = {
+      snsId: command.snsId,
+      nickname: command.nickname,
+      profileImageUrl: command.profileImageUrl,
+    };
 
     const newUserId = await this.userDbCommandPort.createUser(createUser);
     return this.generateTokens(newUserId);

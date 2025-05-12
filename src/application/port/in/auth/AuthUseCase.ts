@@ -27,6 +27,21 @@ export class SocialLoginCommand {
   profileImageUrl: string;
 }
 
+@SwaggerDto()
+export class CreateUserCommand {
+  @IsString()
+  @IsNotEmpty()
+  snsId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  nickname: string;
+
+  @IsString()
+  @IsNotEmpty()
+  profileImageUrl: string;
+}
+
 export interface AuthUseCase {
   loginWithSocial(command: SocialLoginCommand): Promise<IToken>;
   refreshToken(command: RefreshTokenCommand): Promise<IToken>;
