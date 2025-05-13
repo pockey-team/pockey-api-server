@@ -4,8 +4,8 @@ import { RecommendSessionStepDbEntity } from './recommend-session-step.entity';
 import { RecommendSessionDbEntity } from './recommend-session.entity';
 import {
   RecommendSession,
+  RecommendSessionBaseStep,
   RecommendSessionResult,
-  RecommendSessionStep,
 } from '../../domain/recommend-session';
 
 export const mapToRecommendSession = (dbEntity: RecommendSessionDbEntity): RecommendSession => {
@@ -14,23 +14,22 @@ export const mapToRecommendSession = (dbEntity: RecommendSessionDbEntity): Recom
     receiverName: dbEntity.receiverName,
     steps:
       dbEntity.steps && dbEntity.steps.length > 0
-        ? dbEntity.steps.map(step => mapToRecommendSessionStep(step))
+        ? dbEntity.steps.map(step => mapToRecommendSessionBaseStep(step))
         : [],
     result: dbEntity.result ? mapToRecommendSessionResult(dbEntity.result) : undefined,
     endedAt: dbEntity.endedAt ?? undefined,
   };
 };
 
-export const mapToRecommendSessionStep = (
+export const mapToRecommendSessionBaseStep = (
   dbEntity: RecommendSessionStepDbEntity,
-): RecommendSessionStep => {
+): RecommendSessionBaseStep => {
   return {
     id: dbEntity.id,
     sessionId: dbEntity.session.id,
     step: dbEntity.step,
     question: dbEntity.question,
     options: dbEntity.options,
-    optionImages: dbEntity.optionImages,
     answer: dbEntity.answer,
   };
 };

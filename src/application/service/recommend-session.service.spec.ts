@@ -8,7 +8,11 @@ import {
   recommendSessionStepMockData,
 } from '../../__mock__';
 import { OpenAiClient } from '../../adapter/llm/openai.client';
-import { RecommendSession, RecommendSessionStep } from '../../domain/recommend-session';
+import {
+  RecommendSession,
+  RecommendSessionBaseStep,
+  RecommendSessionStepType,
+} from '../../domain/recommend-session';
 import {
   RecommendSessionAlreadyEndedException,
   RecommendSessionInvalidAnswerException,
@@ -109,7 +113,13 @@ describe('RecommendSessionService', () => {
       const result = await service.startSession(command);
 
       // then
-      expect(result).toEqual(step);
+      expect(result).toEqual({
+        ...step,
+        type: RecommendSessionStepType.SETUP,
+        setupCount: 4,
+        occasionCount: 1,
+        questionCount: 4,
+      });
       expect(commandPortMock.startSession).toHaveBeenCalledWith(command);
       expect(commandPortMock.createStep).toHaveBeenCalledWith({
         sessionId: session.id,
@@ -120,7 +130,7 @@ describe('RecommendSessionService', () => {
   });
 
   describe('submitAnswer', () => {
-    it('답변을 제출하면 다섯번째 질문까지는 이름을 포함한 공통 질문을 반환한다.', async () => {
+    it('답변을 제출하면 네번째 질문까지는 이름을 포함한 공통 질문을 반환한다.', async () => {
       // given
       const session = recommendSessionMockData;
       queryPortMock.getSessionById.mockResolvedValue(session);
@@ -128,7 +138,7 @@ describe('RecommendSessionService', () => {
       const commonQuestion = commonQuestionMockData;
       commonQuestionQueryPortMock.getCommonQuestionsByStep.mockResolvedValue([commonQuestion]);
 
-      const lastStep: RecommendSessionStep = {
+      const lastStep: RecommendSessionBaseStep = {
         id: 1,
         sessionId: session.id,
         step: 1,
@@ -137,7 +147,7 @@ describe('RecommendSessionService', () => {
       };
       queryPortMock.getLastStep.mockResolvedValue(lastStep);
 
-      const nextStep: RecommendSessionStep = {
+      const nextStep: RecommendSessionBaseStep = {
         id: 2,
         sessionId: session.id,
         step: 2,
@@ -152,7 +162,74 @@ describe('RecommendSessionService', () => {
       const result = await service.submitAnswer(command);
 
       // then
-      expect(result).toEqual(nextStep);
+      expect(result).toEqual({ ...nextStep, type: RecommendSessionStepType.SETUP });
+      expect(queryPortMock.getSessionById).toHaveBeenCalledWith(session.id);
+      expect(queryPortMock.getLastStep).toHaveBeenCalledWith(session.id);
+      expect(commandPortMock.updateAnswer).toHaveBeenCalledWith(lastStep.id, command.answer);
+      expect(commandPortMock.createStep).toHaveBeenCalledWith({
+        sessionId: session.id,
+        question: nextStep.question,
+        options: nextStep.options,
+      });
+      expect(commandPortMock.endSession).not.toHaveBeenCalled();
+      expect(commandPortMock.createResult).not.toHaveBeenCalled();
+      expect(openAiClientMock.generateQuestion).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getProducts).not.toHaveBeenCalled();
+      expect(openAiClientMock.recommendGift).not.toHaveBeenCalled();
+    });
+
+    it('답변을 제출하면 다섯번째 질문에서는 커스텀 질문을 반환한다.', async () => {
+      // given
+      const session = recommendSessionMockData;
+      queryPortMock.getSessionById.mockResolvedValue(session);
+
+      const commonQuestion = {
+        ...commonQuestionMockData,
+        question: '어떤 날 선물을 주고자 하나요?',
+        options: ['생일 축하', '고마워요', '축하해요', '응원해요', '미안한 마음'],
+      };
+      commonQuestionQueryPortMock.getCommonQuestionsByStep.mockResolvedValue([commonQuestion]);
+
+      const lastStep: RecommendSessionBaseStep = {
+        id: 4,
+        sessionId: session.id,
+        step: 4,
+        question: '질문',
+        options: ['옵션1', '옵션2', '옵션3', '옵션4'],
+      };
+      queryPortMock.getLastStep.mockResolvedValue(lastStep);
+
+      const nextStep: RecommendSessionBaseStep = {
+        id: 5,
+        sessionId: session.id,
+        step: 5,
+        question: `${session.receiverName}${commonQuestion.question}`,
+        options: commonQuestion.options,
+      };
+      commandPortMock.createStep.mockResolvedValue(nextStep);
+
+      const command: SubmitAnswerCommand = { sessionId: session.id, answer: '옵션1' };
+
+      // when
+      const result = await service.submitAnswer(command);
+
+      // then
+      expect(result).toEqual({
+        ...nextStep,
+        type: RecommendSessionStepType.OCCASION,
+        description: '선물을 주고자 하는 상황을 알려주세요',
+        options: [
+          { description: '홍길동님의 생일이에요', key: 'birthday', title: '생일 축하' },
+          { description: '홍길동님께 고마운 마음이에요', key: 'thankyou', title: '고마워요' },
+          {
+            description: '홍길동님께 기쁜 마음을 전해요',
+            key: 'congratulation',
+            title: '축하해요',
+          },
+          { description: '홍길동님을 응원해요', key: 'support', title: '응원해요' },
+          { description: '홍길동님께 미안한 마음을 전해요', key: 'sorry', title: '미안한 마음' },
+        ],
+      });
       expect(queryPortMock.getSessionById).toHaveBeenCalledWith(session.id);
       expect(queryPortMock.getLastStep).toHaveBeenCalledWith(session.id);
       expect(commandPortMock.updateAnswer).toHaveBeenCalledWith(lastStep.id, command.answer);
@@ -182,7 +259,7 @@ describe('RecommendSessionService', () => {
         { ...commonQuestion, question: '랜덤 질문3' },
       ]);
 
-      const lastStep: RecommendSessionStep = {
+      const lastStep: RecommendSessionBaseStep = {
         id: 5,
         sessionId: session.id,
         step: 5,
@@ -191,7 +268,7 @@ describe('RecommendSessionService', () => {
       };
       queryPortMock.getLastStep.mockResolvedValue(lastStep);
 
-      const nextStep: RecommendSessionStep = {
+      const nextStep: RecommendSessionBaseStep = {
         id: 6,
         sessionId: session.id,
         step: 6,
@@ -206,7 +283,7 @@ describe('RecommendSessionService', () => {
       const result = await service.submitAnswer(command);
 
       // then
-      expect(result).toEqual(nextStep);
+      expect(result).toEqual({ ...nextStep, type: RecommendSessionStepType.QUESTION });
       expect(queryPortMock.getSessionById).toHaveBeenCalledWith(session.id);
       expect(queryPortMock.getLastStep).toHaveBeenCalledWith(session.id);
       expect(commandPortMock.updateAnswer).toHaveBeenCalledWith(lastStep.id, command.answer);
@@ -235,7 +312,7 @@ describe('RecommendSessionService', () => {
         options: ['옵션1', '옵션2', '옵션3', '옵션4'],
       });
 
-      const lastStep: RecommendSessionStep = {
+      const lastStep: RecommendSessionBaseStep = {
         id: 6,
         sessionId: session.id,
         step: 6,
@@ -244,7 +321,7 @@ describe('RecommendSessionService', () => {
       };
       queryPortMock.getLastStep.mockResolvedValue(lastStep);
 
-      const nextStep: RecommendSessionStep = {
+      const nextStep: RecommendSessionBaseStep = {
         id: 7,
         sessionId: session.id,
         step: 7,
@@ -259,7 +336,7 @@ describe('RecommendSessionService', () => {
       const result = await service.submitAnswer(command);
 
       // then
-      expect(result).toEqual(nextStep);
+      expect(result).toEqual({ ...nextStep, type: RecommendSessionStepType.QUESTION });
       expect(queryPortMock.getSessionById).toHaveBeenCalledTimes(2);
       expect(queryPortMock.getSessionById).toHaveBeenCalledWith(session.id);
       expect(queryPortMock.getLastStep).toHaveBeenCalledTimes(1);
@@ -302,7 +379,7 @@ describe('RecommendSessionService', () => {
         { id: productMockData.id, reason: '추천 이유 1', order: 1 },
       ]);
 
-      const lastStep: RecommendSessionStep = {
+      const lastStep: RecommendSessionBaseStep = {
         id: 9,
         sessionId,
         step: 9,
@@ -355,7 +432,7 @@ describe('RecommendSessionService', () => {
       const session = recommendSessionMockData;
       queryPortMock.getSessionById.mockResolvedValue(session);
 
-      const lastStep: RecommendSessionStep = {
+      const lastStep: RecommendSessionBaseStep = {
         id: 1,
         sessionId,
         step: 1,

@@ -8,8 +8,8 @@ import { RecommendSessionStepDbEntity } from './recommend-session-step.entity';
 import { RecommendSessionDbEntity } from './recommend-session.entity';
 import {
   mapToRecommendSession,
+  mapToRecommendSessionBaseStep,
   mapToRecommendSessionResult,
-  mapToRecommendSessionStep,
 } from './recommend-session.mapper';
 import { ProductNotFoundException } from '../../application/common/error/exception/product.exception';
 import { StartSessionCommand } from '../../application/port/in/recommend-session/RecommendSessionUseCase';
@@ -21,8 +21,8 @@ import {
 import { RecommendSessionDbQueryPort } from '../../application/port/out/RecommendSessionDbQueryPort';
 import {
   RecommendSession,
+  RecommendSessionBaseStep,
   RecommendSessionResult,
-  RecommendSessionStep,
 } from '../../domain/recommend-session';
 
 @Injectable()
@@ -46,7 +46,7 @@ export class RecommendSessionGateway
     return mapToRecommendSession(session);
   }
 
-  async getLastStep(sessionId: string): Promise<RecommendSessionStep> {
+  async getLastStep(sessionId: string): Promise<RecommendSessionBaseStep> {
     const stepEntity = await this.stepRepository.findOne(
       { session: { id: sessionId } },
       { orderBy: { step: 'DESC' } },
@@ -54,7 +54,7 @@ export class RecommendSessionGateway
     if (!stepEntity) {
       throw new NotFoundException();
     }
-    return mapToRecommendSessionStep(stepEntity);
+    return mapToRecommendSessionBaseStep(stepEntity);
   }
 
   async startSession(command: StartSessionCommand): Promise<RecommendSession> {
@@ -67,7 +67,7 @@ export class RecommendSessionGateway
     return mapToRecommendSession(sessionEntity);
   }
 
-  async createStep(command: AddStepCommand): Promise<RecommendSessionStep> {
+  async createStep(command: AddStepCommand): Promise<RecommendSessionBaseStep> {
     const session = await this.sessionRepository.findOne(command.sessionId, {
       populate: ['steps'],
     });
@@ -85,12 +85,11 @@ export class RecommendSessionGateway
     stepEntity.step = lastStep ? lastStep.step + 1 : 1;
     stepEntity.question = command.question;
     stepEntity.options = command.options;
-    stepEntity.optionImages = command.optionImages;
 
     session.steps?.add(stepEntity);
     await this.em.persistAndFlush(session);
 
-    return mapToRecommendSessionStep(stepEntity);
+    return mapToRecommendSessionBaseStep(stepEntity);
   }
 
   async createResult(command: CreateResultCommand): Promise<RecommendSessionResult[]> {
