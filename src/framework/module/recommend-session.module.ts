@@ -9,6 +9,7 @@ import {
 import { CommonQuestionDbEntity } from '../../adapter/db/common-question.entity';
 import { CommonQuestionGateway } from '../../adapter/db/common-question.gateway';
 import { RecommendSessionGateway } from '../../adapter/db/recommend-session.gateway';
+import { OpenAiClient } from '../../adapter/llm/openai.client';
 import { RecommendSessionController } from '../../adapter/web/recommend-session.controller';
 import { RecommendSessionService } from '../../application/service/recommend-session.service';
 
@@ -23,6 +24,7 @@ import { RecommendSessionService } from '../../application/service/recommend-ses
   ],
   controllers: [RecommendSessionController],
   providers: [
+    OpenAiClient,
     {
       provide: 'RecommendSessionUseCase',
       useClass: RecommendSessionService,

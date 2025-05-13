@@ -1,6 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { RecommendSessionResult, RecommendSessionStep } from '../../domain/recommend-session';
+import { OpenAiClient } from '../../adapter/llm/openai.client';
+import { retry } from '../../common/util/retry.util';
+import {
+  RecommendSession,
+  RecommendSessionResult,
+  RecommendSessionStep,
+} from '../../domain/recommend-session';
 import {
   RecommendSessionAlreadyEndedException,
   RecommendSessionInvalidAnswerException,
@@ -24,6 +30,8 @@ export class RecommendSessionService implements RecommendSessionUseCase {
     private readonly sessionDbCommandPort: RecommendSessionDbCommandPort,
     @Inject('CommonQuestionGateway')
     private readonly commonQuestionDbQueryPort: CommonQuestionDbQueryPort,
+
+    private readonly openAiClient: OpenAiClient,
   ) {}
 
   async startSession(command: StartSessionCommand): Promise<RecommendSessionStep> {
@@ -59,7 +67,7 @@ export class RecommendSessionService implements RecommendSessionUseCase {
     await this.sessionDbCommandPort.updateAnswer(lastStep.id, command.answer);
 
     const nextStep = lastStep.step + 1;
-    if (nextStep > 8) {
+    if (nextStep > 9) {
       return this.generateAnswer(command.sessionId);
     }
 
@@ -110,14 +118,23 @@ export class RecommendSessionService implements RecommendSessionUseCase {
   }
 
   private async generateLLMQuestion(sessionId: string): Promise<RecommendSessionStep> {
-    // TODO: LLM 통해 생성하도록 변경
-    const generatedQuestion = 'LLM 질문';
-    const generatedOptions = ['옵션1', '옵션2', '옵션3', '옵션4'];
-    return this.sessionDbCommandPort.createStep({
-      sessionId,
-      question: generatedQuestion,
-      options: generatedOptions,
-    });
+    const session = await this.sessionDbQueryPort.getSessionById(sessionId);
+
+    const input = this.generateQuestionLlmInput(session);
+    const generateQuestion = async () => await this.openAiClient.generateQuestion(input);
+    const llmQuestion = await retry(generateQuestion, { maxRetries: 3 });
+
+    return this.sessionDbCommandPort.createStep({ sessionId, ...llmQuestion });
+  }
+
+  async endSession(sessionId: string): Promise<void> {
+    await this.sessionDbCommandPort.endSession(sessionId);
+  }
+
+  private generateQuestionLlmInput(session: RecommendSession) {
+    return session.steps
+      .map(step => `질문:${step.question}/선택지:${step.options.join('\n')}/답변:${step.answer}`)
+      .join('\n');
   }
 
   private async generateAnswer(sessionId: string): Promise<RecommendSessionResult> {
@@ -133,9 +150,5 @@ export class RecommendSessionService implements RecommendSessionUseCase {
     await this.sessionDbCommandPort.endSession(sessionId);
 
     return result;
-  }
-
-  async endSession(sessionId: string): Promise<void> {
-    await this.sessionDbCommandPort.endSession(sessionId);
   }
 }
