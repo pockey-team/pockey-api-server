@@ -243,7 +243,10 @@ export class RecommendSessionService implements RecommendSessionUseCase {
       throw new RecommendProductNotFoundException();
     }
 
-    const llmAnswer = await this.openAiClient.recommendGift(input, recommendProducts);
+    const llmAnswer = await retry(
+      async () => await this.openAiClient.recommendGift(input, recommendProducts),
+      { maxRetries: 3 },
+    );
     const result = await this.sessionDbCommandPort.createResult({
       sessionId,
       recommendResults: llmAnswer.map((answer: { id: number; reason: string }, index: number) => ({
