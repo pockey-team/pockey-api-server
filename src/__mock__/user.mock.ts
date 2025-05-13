@@ -2,7 +2,6 @@ import { User, UserRole } from '../domain/user';
 
 export const userMockData: Readonly<User> = {
   id: 1,
-  snsId: 'sns-user-1',
   nickname: '테스트 유저',
   profileImageUrl: 'http://test.com/image.jpg',
   role: UserRole.USER,
