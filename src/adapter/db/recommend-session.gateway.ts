@@ -10,6 +10,7 @@ import {
   mapToRecommendSessionResult,
   mapToRecommendSessionStep,
 } from './recommend-session.mapper';
+import { StartSessionCommand } from '../../application/port/in/recommend-session/RecommendSessionUseCase';
 import {
   AddStepCommand,
   CreateResultCommand,
@@ -54,9 +55,11 @@ export class RecommendSessionGateway
     return mapToRecommendSessionStep(stepEntity);
   }
 
-  async createSession(userId?: number): Promise<RecommendSession> {
+  async startSession(command: StartSessionCommand): Promise<RecommendSession> {
     const sessionEntity = new RecommendSessionDbEntity();
-    sessionEntity.userId = userId;
+    sessionEntity.deviceId = command.deviceId;
+    sessionEntity.userId = command.userId;
+    sessionEntity.receiverName = command.receiverName;
     await this.em.persistAndFlush(sessionEntity);
 
     return mapToRecommendSession(sessionEntity);
@@ -80,6 +83,7 @@ export class RecommendSessionGateway
     stepEntity.step = lastStep ? lastStep.step + 1 : 1;
     stepEntity.question = command.question;
     stepEntity.options = command.options;
+    stepEntity.optionImages = command.optionImages;
 
     session.steps?.add(stepEntity);
     await this.em.persistAndFlush(session);

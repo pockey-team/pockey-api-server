@@ -1,5 +1,6 @@
 export class RecommendSession {
   id: string;
+  receiverName: string;
   steps: RecommendSessionStep[];
   result?: RecommendSessionResult;
   endedAt?: Date;
@@ -11,6 +12,7 @@ export class RecommendSessionStep {
   step: number;
   question: string;
   options: string[];
+  optionImages?: string[];
   answer?: string;
 }
 
