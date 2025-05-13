@@ -12,4 +12,8 @@ export const ERROR_MESSAGES = {
   USER: {
     NOT_FOUND: '사용자를 찾을 수 없습니다.',
   },
+  RECOMMEND_SESSION: {
+    ALREADY_ENDED: '이미 종료된 세션입니다.',
+    NOT_FOUND: '세션을 찾을 수 없습니다.',
+  },
 } as const;
