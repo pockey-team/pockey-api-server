@@ -130,7 +130,7 @@ describe('RecommendSessionService', () => {
   });
 
   describe('submitAnswer', () => {
-    it('답변을 제출하면 다섯번째 질문까지는 이름을 포함한 공통 질문을 반환한다.', async () => {
+    it('답변을 제출하면 네번째 질문까지는 이름을 포함한 공통 질문을 반환한다.', async () => {
       // given
       const session = recommendSessionMockData;
       queryPortMock.getSessionById.mockResolvedValue(session);
