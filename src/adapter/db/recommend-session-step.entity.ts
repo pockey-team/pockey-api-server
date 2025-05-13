@@ -16,6 +16,9 @@ export class RecommendSessionStepDbEntity {
   @Property({ type: 'json' })
   options: string[];
 
+  @Property({ type: 'json', nullable: true })
+  optionImages?: string[];
+
   @Property({ nullable: true })
   answer?: string;
 

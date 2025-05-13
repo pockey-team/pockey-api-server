@@ -13,3 +13,9 @@ export class RecommendSessionAlreadyEndedException extends BadRequestException {
     super(ERROR_MESSAGES.RECOMMEND_SESSION.ALREADY_ENDED);
   }
 }
+
+export class RecommendSessionInvalidAnswerException extends BadRequestException {
+  constructor() {
+    super(ERROR_MESSAGES.RECOMMEND_SESSION.INVALID_ANSWER);
+  }
+}
