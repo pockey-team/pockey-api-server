@@ -8,10 +8,12 @@ import {
   RecommendSessionStep,
 } from '../../domain/recommend-session';
 import {
+  RecommendProductNotFoundException,
   RecommendSessionAlreadyEndedException,
   RecommendSessionInvalidAnswerException,
   RecommendSessionNotFoundException,
 } from '../common/error/exception/recommend-session.exception';
+import { ProductDbQueryPort } from '../port/in/product/ProductDbQueryPort';
 import {
   RecommendSessionUseCase,
   StartSessionCommand,
@@ -24,12 +26,14 @@ import { RecommendSessionDbQueryPort } from '../port/out/RecommendSessionDbQuery
 @Injectable()
 export class RecommendSessionService implements RecommendSessionUseCase {
   constructor(
+    @Inject('CommonQuestionGateway')
+    private readonly commonQuestionDbQueryPort: CommonQuestionDbQueryPort,
     @Inject('RecommendSessionGateway')
     private readonly sessionDbQueryPort: RecommendSessionDbQueryPort,
     @Inject('RecommendSessionGateway')
     private readonly sessionDbCommandPort: RecommendSessionDbCommandPort,
-    @Inject('CommonQuestionGateway')
-    private readonly commonQuestionDbQueryPort: CommonQuestionDbQueryPort,
+    @Inject('ProductGateway')
+    private readonly productDbQueryPort: ProductDbQueryPort,
 
     private readonly openAiClient: OpenAiClient,
   ) {}
@@ -51,7 +55,7 @@ export class RecommendSessionService implements RecommendSessionUseCase {
 
   async submitAnswer(
     command: SubmitAnswerCommand,
-  ): Promise<RecommendSessionStep | RecommendSessionResult> {
+  ): Promise<RecommendSessionStep | RecommendSessionResult[]> {
     const session = await this.sessionDbQueryPort.getSessionById(command.sessionId);
     if (!session) {
       throw new RecommendSessionNotFoundException();
@@ -133,19 +137,41 @@ export class RecommendSessionService implements RecommendSessionUseCase {
 
   private generateQuestionLlmInput(session: RecommendSession) {
     return session.steps
-      .map(step => `질문:${step.question}/선택지:${step.options.join('\n')}/답변:${step.answer}`)
+      .map(step => `질문:${step.question}/선택지:${step.options.join(',')}/답변:${step.answer}`)
       .join('\n');
   }
 
-  private async generateAnswer(sessionId: string): Promise<RecommendSessionResult> {
-    // TODO: LLM 통해 생성하도록 변경
-    const generatedRecommendProductIds = [1, 2, 3];
-    const generatedRecommendText = '추천 결과';
+  private async generateAnswer(sessionId: string): Promise<RecommendSessionResult[]> {
+    const session = await this.sessionDbQueryPort.getSessionById(sessionId);
+    const input = this.generateQuestionLlmInput(session);
 
+    const step1Answer = session.steps[0].answer;
+    const step2Answer = session.steps[1].answer;
+    const step3Answer = session.steps[2].answer;
+    const step4Answer = session.steps[3].answer;
+
+    if (!step1Answer || !step2Answer || !step3Answer || !step4Answer) {
+      throw new RecommendSessionInvalidAnswerException();
+    }
+
+    const recommendProducts = await this.productDbQueryPort.getProducts({
+      targetGender: [step1Answer, '성별 무관'],
+      ageRange: step2Answer,
+      priceRange: step4Answer,
+      friendshipLevel: step3Answer,
+    });
+    if (recommendProducts.length === 0) {
+      throw new RecommendProductNotFoundException();
+    }
+
+    const llmAnswer = await this.openAiClient.recommendGift(input, recommendProducts);
     const result = await this.sessionDbCommandPort.createResult({
       sessionId,
-      recommendProductIds: generatedRecommendProductIds,
-      recommendText: generatedRecommendText,
+      recommendResults: llmAnswer.map((answer: { id: number; reason: string }, index: number) => ({
+        productId: +answer.id,
+        reason: answer.reason,
+        order: index + 1,
+      })),
     });
     await this.sessionDbCommandPort.endSession(sessionId);
 

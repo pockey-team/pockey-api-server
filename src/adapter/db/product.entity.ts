@@ -1,4 +1,6 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, OneToMany, PrimaryKey, Property, Rel } from '@mikro-orm/core';
+
+import { RecommendSessionResultDbEntity } from './recommend-session-result.entity';
 
 @Entity({ tableName: 'product' })
 export class ProductDbEntity {
@@ -49,4 +51,7 @@ export class ProductDbEntity {
 
   @Property({ onCreate: () => new Date() })
   createdAt: Date;
+
+  @OneToMany(() => RecommendSessionResultDbEntity, result => result.product)
+  results: Rel<RecommendSessionResultDbEntity>[];
 }

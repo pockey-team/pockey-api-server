@@ -1,3 +1,5 @@
+import { Product } from './product';
+
 export class RecommendSession {
   id: string;
   receiverName: string;
@@ -17,7 +19,7 @@ export class RecommendSessionStep {
 }
 
 export class RecommendSessionResult {
-  sessionId: string;
-  recommendProductIds: number[];
-  recommendText: string;
+  product: Product;
+  reason: string;
+  order: number;
 }

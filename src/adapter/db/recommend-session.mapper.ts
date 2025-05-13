@@ -1,3 +1,4 @@
+import { mapToProduct } from './product.mapper';
 import { RecommendSessionResultDbEntity } from './recommend-session-result.entity';
 import { RecommendSessionStepDbEntity } from './recommend-session-step.entity';
 import { RecommendSessionDbEntity } from './recommend-session.entity';
@@ -38,8 +39,8 @@ export const mapToRecommendSessionResult = (
   dbEntity: RecommendSessionResultDbEntity,
 ): RecommendSessionResult => {
   return {
-    sessionId: dbEntity.session.id,
-    recommendProductIds: dbEntity.recommendedProductIds,
-    recommendText: dbEntity.recommendText,
+    product: mapToProduct(dbEntity.product),
+    reason: dbEntity.reason,
+    order: dbEntity.order,
   };
 };

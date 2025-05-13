@@ -30,6 +30,6 @@ export interface RecommendSessionUseCase {
   startSession(command: StartSessionCommand): Promise<RecommendSessionStep>;
   submitAnswer(
     command: SubmitAnswerCommand,
-  ): Promise<RecommendSessionStep | RecommendSessionResult>;
+  ): Promise<RecommendSessionStep | RecommendSessionResult[]>;
   endSession(sessionId: string): Promise<void>;
 }
