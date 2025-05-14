@@ -1,21 +1,23 @@
-export class Question {
-  question: string;
-  questionOptions: string[];
+export class RecommendSession {
+  id: string;
+  receiverName: string;
+  steps: RecommendSessionStep[];
+  result?: RecommendSessionResult;
+  endedAt?: Date;
 }
 
-export class Session {
+export class RecommendSessionStep {
+  id: number;
   sessionId: string;
-  question: Question;
+  step: number;
+  question: string;
+  options: string[];
+  optionImages?: string[];
+  answer?: string;
 }
 
-export class QuestionAnswer {
-  type: 'question';
-  question: Question;
+export class RecommendSessionResult {
+  sessionId: string;
+  recommendProductIds: number[];
+  recommendText: string;
 }
-
-export class ResultAnswer {
-  type: 'result';
-  resultId: number;
-}
-
-export type SessionAnswer = QuestionAnswer | ResultAnswer;

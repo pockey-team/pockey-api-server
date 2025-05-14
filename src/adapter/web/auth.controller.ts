@@ -1,9 +1,9 @@
 import { Body, Controller, Inject, Post } from '@nestjs/common';
-import { Public } from 'src/framework/auth/decorator/public.decorator';
 
 import { InvalidRefreshTokenException } from '../../application/common/error/exception';
 import { AuthUseCase, SocialLoginCommand } from '../../application/port/in/auth/AuthUseCase';
 import { IToken } from '../../domain/auth/token';
+import { Public } from '../../framework/auth/decorator/public.decorator';
 import { RequestInfo } from '../../framework/auth/decorator/request-info.decorator';
 
 @Controller()

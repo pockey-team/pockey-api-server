@@ -8,6 +8,7 @@ import { AuthModule } from './auth.module';
 import { CacheModule } from './cache.module';
 import { HealthModule } from './health.module';
 import { PostModule } from './post.module';
+import { ProductModule } from './product.module';
 import { RecommendSessionModule } from './recommend-session.module';
 import { UserModule } from './user.module';
 import { JwtAuthGuard } from '../auth/guard';
@@ -21,6 +22,7 @@ import createMikroOrmConfig from '../config/mikro-orm.config';
     ConfigModule.forRoot({ isGlobal: true }),
     HealthModule,
     PostModule,
+    ProductModule,
     UserModule,
     RecommendSessionModule,
     MikroOrmModule.forRootAsync({
@@ -36,6 +38,7 @@ import createMikroOrmConfig from '../config/mikro-orm.config';
             children: [
               { path: 'auth', module: AuthModule },
               { path: 'post', module: PostModule },
+              { path: 'product', module: ProductModule },
               { path: 'recommend-session', module: RecommendSessionModule },
               { path: 'user', module: UserModule },
             ],
