@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-import { IToken } from '../../domain/auth/token';
+import { IToken } from '../../domain/token';
 import { UserRole } from '../../domain/user';
 import { InvalidRefreshTokenException } from '../common/error/exception';
 import {
