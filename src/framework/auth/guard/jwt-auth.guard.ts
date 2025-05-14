@@ -55,6 +55,13 @@ export class JwtAuthGuard implements CanActivate {
 
   private setUserToRequest(context: ExecutionContext, payload: any): void {
     const request = context.switchToHttp().getRequest();
-    request.user = { ...payload, refreshToken: payload.refreshToken };
+
+    const user = {
+      id: payload.sub,
+      role: payload.role,
+      refreshToken: payload.refreshToken ?? null,
+    };
+
+    request.user = user;
   }
 }

@@ -1,15 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-import { IToken } from '../../domain/token';
+import { IToken } from '../../domain/auth/token';
 import { UserRole } from '../../domain/user';
-import { InvalidPasswordException, InvalidRefreshTokenException } from '../common/error/exception';
-import { comparePassword, hashPassword } from '../common/util/password';
+import { InvalidRefreshTokenException } from '../common/error/exception';
 import {
   AuthUseCase,
-  LoginCommand,
+  CreateUserCommand,
   RefreshTokenCommand,
-  UpdatePasswordCommand,
+  SocialLoginCommand,
 } from '../port/in/auth/AuthUseCase';
 import { UserDbCommandPort } from '../port/out/UserDbCommandPort';
 import { UserDbQueryPort } from '../port/out/UserDbQueryPort';
@@ -24,15 +23,21 @@ export class AuthService implements AuthUseCase {
     private readonly userDbCommandPort: UserDbCommandPort,
   ) {}
 
-  async login(command: LoginCommand): Promise<IToken> {
-    const userCredential = await this.userDbQueryPort.getUserForLogin(command.email);
+  async loginWithSocial(command: SocialLoginCommand): Promise<IToken> {
+    const user = await this.userDbQueryPort.getUserBySnsId(command.snsId);
 
-    const isValid = await comparePassword(command.password, userCredential.password!);
-    if (!isValid) {
-      throw new InvalidPasswordException();
+    if (user) {
+      return this.generateTokens(user.id!);
     }
 
-    return this.generateTokens(userCredential.id);
+    const createUser: CreateUserCommand = {
+      snsId: command.snsId,
+      nickname: command.nickname,
+      profileImageUrl: command.profileImageUrl,
+    };
+
+    const newUserId = await this.userDbCommandPort.createUser(createUser);
+    return this.generateTokens(newUserId);
   }
 
   async refreshToken(command: RefreshTokenCommand): Promise<IToken> {
@@ -45,21 +50,9 @@ export class AuthService implements AuthUseCase {
     return this.generateTokens(command.userId);
   }
 
-  async updatePassword(command: UpdatePasswordCommand): Promise<boolean> {
-    const userCredential = await this.userDbQueryPort.getUserForLogin(command.email);
-
-    const isValid = await comparePassword(command.currentPassword, userCredential.password!);
-    if (!isValid) {
-      throw new InvalidPasswordException();
-    }
-
-    const hashedPassword = await hashPassword(command.newPassword);
-    return this.userDbCommandPort.updateUserPassword(userCredential.id, hashedPassword);
-  }
-
-  private generateTokens(userId: string): IToken {
+  public generateTokens(userId: number): IToken {
     return {
-      accessToken: this.jwtService.sign({ id: userId, role: UserRole.USER }, { expiresIn: '1h' }),
+      accessToken: this.jwtService.sign({ sub: userId, role: UserRole.USER }, { expiresIn: '1h' }),
       refreshToken: this.jwtService.sign(
         { id: userId, role: UserRole.USER, refreshToken: true },
         { expiresIn: '7d' },

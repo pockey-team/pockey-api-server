@@ -1,3 +1,5 @@
+import { CreateUser } from 'src/domain/create-user';
+
 export interface UserDbCommandPort {
-  updateUserPassword(id: string, password: string): Promise<boolean>;
+  createUser(user: CreateUser): Promise<number>;
 }

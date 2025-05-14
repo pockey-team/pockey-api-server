@@ -1,12 +1,8 @@
-import { Body, Controller, Get, Inject, Param, Patch, Query } from '@nestjs/common';
+import { Controller, Get, Inject } from '@nestjs/common';
 
-import { CursorResult } from '../../application/common/types/CursorResult';
-import {
-  GetUsersQuery,
-  UpdateUserPasswordCommand,
-  UserUseCase,
-} from '../../application/port/in/user/UserUseCase';
-import { User, UserListItem } from '../../domain/user';
+import { UserUseCase } from '../../application/port/in/user/UserUseCase';
+import { GetUser } from '../../common/decorators/get-user.decorator';
+import { User } from '../../domain/user';
 
 @Controller()
 export class UserController {
@@ -15,21 +11,8 @@ export class UserController {
     private readonly userUseCase: UserUseCase,
   ) {}
 
-  @Get('/:id')
-  async getUser(@Param('id') id: string): Promise<User> {
-    return this.userUseCase.getUserById(id);
-  }
-
-  @Get()
-  async getUsers(@Query() query: GetUsersQuery): Promise<CursorResult<UserListItem>> {
-    return this.userUseCase.getUsers(query);
-  }
-
-  @Patch('/:userId/password')
-  async updateUserPassword(
-    @Param('userId') userId: string,
-    @Body() body: UpdateUserPasswordCommand,
-  ): Promise<boolean> {
-    return this.userUseCase.updateUserPassword(userId, body);
+  @Get('me')
+  async getMyProfile(@GetUser() user: User): Promise<User> {
+    return this.userUseCase.getUserById(user.id!);
   }
 }

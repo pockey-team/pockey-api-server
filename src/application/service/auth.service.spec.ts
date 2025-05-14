@@ -1,16 +1,11 @@
 import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
-import * as bcrypt from 'bcrypt';
 
 import { AuthService } from './auth.service';
-import { userCredentialMockData } from '../../__mock__';
+import { userMockData } from '../../__mock__/user.mock';
 import { UserRole } from '../../domain/user';
-import {
-  InvalidPasswordException,
-  InvalidRefreshTokenException,
-  UserNotFoundException,
-} from '../common/error/exception';
-import { RefreshTokenCommand } from '../port/in/auth/AuthUseCase';
+import { InvalidRefreshTokenException } from '../common/error/exception';
+import { RefreshTokenCommand, SocialLoginCommand } from '../port/in/auth/AuthUseCase';
 import { UserDbCommandPort } from '../port/out/UserDbCommandPort';
 import { UserDbQueryPort } from '../port/out/UserDbQueryPort';
 
@@ -18,9 +13,9 @@ jest.mock('bcrypt');
 
 describe('AuthService', () => {
   let service: AuthService;
+  let jwtService: jest.Mocked<JwtService>;
   let queryPortMock: jest.Mocked<UserDbQueryPort>;
   let commandPortMock: jest.Mocked<UserDbCommandPort>;
-  let jwtService: jest.Mocked<JwtService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -30,7 +25,8 @@ describe('AuthService', () => {
           provide: 'UserGateway',
           useValue: {
             getUserForLogin: jest.fn(),
-            updateUserPassword: jest.fn(),
+            getUserBySnsId: jest.fn(),
+            createUser: jest.fn(),
           },
         },
         {
@@ -57,89 +53,64 @@ describe('AuthService', () => {
     jest.clearAllMocks();
   });
 
-  describe('login', () => {
-    it('비밀번호가 일치하면 로그인에 성공한다', async () => {
+  describe('loginWithSocial', () => {
+    it('snsId로 가입한 계정이 있는 경우 로그인에 성공한다', async () => {
       // given
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      jest.spyOn(jwtService, 'sign').mockReturnValueOnce('accessToken');
-      jest.spyOn(jwtService, 'sign').mockReturnValueOnce('refreshToken');
+      const snsId = 'sns-user-1';
+      queryPortMock.getUserBySnsId.mockResolvedValue(userMockData);
+      jwtService.sign.mockReturnValueOnce('accessToken').mockReturnValueOnce('refreshToken');
 
-      const credential = userCredentialMockData;
-      queryPortMock.getUserForLogin.mockResolvedValue(credential);
-
-      const command = { email: credential.email, password: credential.password };
+      const command: SocialLoginCommand = {
+        snsId,
+        nickname: '무시될 유저',
+        profileImageUrl: 'http://irrelevant.com/image.jpg',
+      };
 
       // when
-      const result = await service.login(command);
+      const result = await service.loginWithSocial(command);
 
       // then
       expect(result).toEqual({ accessToken: 'accessToken', refreshToken: 'refreshToken' });
-      expect(queryPortMock.getUserForLogin).toHaveBeenCalledTimes(1);
-      expect(queryPortMock.getUserForLogin).toHaveBeenCalledWith(command.email);
-      expect(bcrypt.compare).toHaveBeenCalledTimes(1);
-      expect(bcrypt.compare).toHaveBeenCalledWith(command.password, credential.password);
+      expect(queryPortMock.getUserBySnsId).toHaveBeenCalledTimes(1);
+      expect(queryPortMock.getUserBySnsId).toHaveBeenCalledWith(snsId);
+      expect(commandPortMock.createUser).not.toHaveBeenCalled();
     });
-
-    it('로그인에 성공하면 accessToken과 refreshToken을 반환한다', async () => {
+    it('snsId로 가입한 계정이 없는 경우 회원가입에 성공한다', async () => {
       // given
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      jest.spyOn(jwtService, 'sign').mockReturnValueOnce('accessToken');
-      jest.spyOn(jwtService, 'sign').mockReturnValueOnce('refreshToken');
+      queryPortMock.getUserBySnsId.mockResolvedValueOnce(null);
 
-      const credential = userCredentialMockData;
-      queryPortMock.getUserForLogin.mockResolvedValue(credential);
+      commandPortMock.createUser.mockResolvedValue(2);
+      jwtService.sign.mockReturnValueOnce('accessToken').mockReturnValueOnce('refreshToken');
 
-      const command = { email: credential.email, password: credential.password };
+      const newSnsId = 'sns-new-456';
+
+      const command: SocialLoginCommand = {
+        snsId: newSnsId,
+        nickname: '새로운 유저',
+        profileImageUrl: 'http://new.image.jpg',
+      };
 
       // when
-      const result = await service.login(command);
+      const result = await service.loginWithSocial(command);
 
       // then
       expect(result).toEqual({ accessToken: 'accessToken', refreshToken: 'refreshToken' });
-      expect(queryPortMock.getUserForLogin).toHaveBeenCalledTimes(1);
-      expect(queryPortMock.getUserForLogin).toHaveBeenCalledWith(command.email);
-      expect(bcrypt.compare).toHaveBeenCalledTimes(1);
-      expect(bcrypt.compare).toHaveBeenCalledWith(command.password, credential.password);
-    });
 
-    it('로그인하려는 사용자가 존재하지 않으면 로그인에 실패한다', async () => {
-      // given
-      jest.spyOn(queryPortMock, 'getUserForLogin').mockRejectedValue(new UserNotFoundException());
-
-      const credential = userCredentialMockData;
-      const command = { email: credential.email, password: credential.password };
-
-      // when & then
-      await expect(service.login(command)).rejects.toThrow(new UserNotFoundException());
-      expect(queryPortMock.getUserForLogin).toHaveBeenCalledTimes(1);
-      expect(queryPortMock.getUserForLogin).toHaveBeenCalledWith(command.email);
-      expect(bcrypt.compare).not.toHaveBeenCalled();
-      expect(jwtService.sign).not.toHaveBeenCalled();
-    });
-
-    it('비밀번호가 일치하지 않으면 로그인에 실패한다', async () => {
-      // given
-      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
-
-      const credential = userCredentialMockData;
-      queryPortMock.getUserForLogin.mockResolvedValue(credential);
-
-      const command = { email: credential.email, password: 'wrongPassword' };
-
-      // when & then
-      await expect(service.login(command)).rejects.toThrow(new InvalidPasswordException());
-      expect(queryPortMock.getUserForLogin).toHaveBeenCalledTimes(1);
-      expect(queryPortMock.getUserForLogin).toHaveBeenCalledWith(command.email);
-      expect(bcrypt.compare).toHaveBeenCalledTimes(1);
-      expect(bcrypt.compare).toHaveBeenCalledWith(command.password, credential.password);
-      expect(jwtService.sign).not.toHaveBeenCalled();
+      expect(queryPortMock.getUserBySnsId).toHaveBeenCalledWith(command.snsId);
+      expect(commandPortMock.createUser).toHaveBeenCalledWith(
+        expect.objectContaining({
+          snsId: command.snsId,
+          nickname: command.nickname,
+          profileImageUrl: command.profileImageUrl,
+        }),
+      );
     });
   });
 
   describe('refreshToken', () => {
     it('refreshToken이 유효하면 accessToken과 refreshToken을 반환한다', async () => {
       // given
-      const userId = 'uuid-v7-user-id';
+      const userId = 1;
       jest.spyOn(jwtService, 'verify').mockReturnValueOnce({ id: userId, refreshToken: true });
       jest.spyOn(jwtService, 'sign').mockReturnValueOnce('accessToken');
       jest.spyOn(jwtService, 'sign').mockReturnValueOnce('refreshToken');
@@ -155,11 +126,11 @@ describe('AuthService', () => {
       expect(jwtService.verify).toHaveBeenCalledWith(command.refreshToken);
       expect(jwtService.sign).toHaveBeenCalledTimes(2);
       expect(jwtService.sign).toHaveBeenCalledWith(
-        { id: userId, userType: UserRole.USER },
+        { sub: userId, role: UserRole.USER },
         { expiresIn: '1h' },
       );
       expect(jwtService.sign).toHaveBeenCalledWith(
-        { id: userId, userType: UserRole.USER, refreshToken: true },
+        { id: userId, role: UserRole.USER, refreshToken: true },
         { expiresIn: '7d' },
       );
     });
@@ -170,7 +141,7 @@ describe('AuthService', () => {
         throw new JsonWebTokenError('invalid token');
       });
 
-      const userId = 'uuid-v7-user-id';
+      const userId = 1;
       const command: RefreshTokenCommand = { refreshToken: 'refreshToken', userId };
 
       // when & then
@@ -180,60 +151,6 @@ describe('AuthService', () => {
       expect(jwtService.verify).toHaveBeenCalledTimes(1);
       expect(jwtService.verify).toHaveBeenCalledWith(command.refreshToken);
       expect(jwtService.sign).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('updatePassword', () => {
-    it('비밀번호를 성공적으로 변경한다', async () => {
-      // given
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      jest.spyOn(jwtService, 'sign').mockReturnValueOnce('accessToken');
-      jest.spyOn(jwtService, 'sign').mockReturnValueOnce('refreshToken');
-
-      const credential = userCredentialMockData;
-      queryPortMock.getUserForLogin.mockResolvedValue(credential);
-      commandPortMock.updateUserPassword.mockResolvedValue(true);
-
-      const command = {
-        email: credential.email,
-        currentPassword: credential.password,
-        newPassword: 'newPassword',
-      };
-
-      // when
-      const result = await service.updatePassword(command);
-
-      // then
-      expect(result).toBe(true);
-      expect(queryPortMock.getUserForLogin).toHaveBeenCalledTimes(1);
-      expect(queryPortMock.getUserForLogin).toHaveBeenCalledWith(command.email);
-      expect(bcrypt.compare).toHaveBeenCalledTimes(1);
-      expect(bcrypt.compare).toHaveBeenCalledWith(command.currentPassword, credential.password);
-      expect(bcrypt.hash).toHaveBeenCalledTimes(1);
-      const SALT_ROUNDS = 10;
-      expect(bcrypt.hash).toHaveBeenCalledWith(command.newPassword, SALT_ROUNDS);
-    });
-
-    it('비밀번호가 일치하지 않으면 비밀번호 변경에 실패한다', async () => {
-      // given
-      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
-
-      const credential = userCredentialMockData;
-      queryPortMock.getUserForLogin.mockResolvedValue(credential);
-
-      const command = {
-        email: credential.email,
-        currentPassword: 'wrongPassword',
-        newPassword: 'newPassword',
-      };
-
-      // when & then
-      await expect(service.updatePassword(command)).rejects.toThrow(new InvalidPasswordException());
-      expect(queryPortMock.getUserForLogin).toHaveBeenCalledTimes(1);
-      expect(queryPortMock.getUserForLogin).toHaveBeenCalledWith(command.email);
-      expect(bcrypt.compare).toHaveBeenCalledTimes(1);
-      expect(bcrypt.compare).toHaveBeenCalledWith(command.currentPassword, credential.password);
-      expect(bcrypt.hash).not.toHaveBeenCalled();
     });
   });
 });

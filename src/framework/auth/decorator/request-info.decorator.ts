@@ -3,7 +3,7 @@ import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { UserRole } from '../../../domain/user';
 
 export interface RequestUser {
-  id: string;
+  id: number;
   role: UserRole;
   refreshToken?: string;
 }

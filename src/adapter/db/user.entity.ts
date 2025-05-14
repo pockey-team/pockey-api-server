@@ -7,23 +7,17 @@ import { UserRole } from '../../domain/user';
 @Entity({ tableName: 'user' })
 export class UserDbEntity {
   @PrimaryKey()
-  id: string;
+  id: number;
 
-  @Unique({ name: 'user_email_key' })
+  @Unique()
   @Property()
-  email: string;
-
-  @Property({ hidden: true })
-  password: string;
-
-  @Property({ nullable: true, fieldName: 'profile_url' })
-  profileImageUrl?: string;
+  snsId: string;
 
   @Property()
-  firstName: string;
+  nickname: string;
 
-  @Property()
-  lastName: string;
+  @Property({ fieldName: 'profile_url' })
+  profileImageUrl: string;
 
   @Enum({ items: () => UserRole })
   role: UserRole;

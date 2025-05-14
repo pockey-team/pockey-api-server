@@ -1,39 +1,48 @@
-import { IsEmail, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString } from 'class-validator';
 
 import { SwaggerDto } from '../../../../common/decorators/swagger-dto.decorator';
 import { IToken } from '../../../../domain/token';
-
-@SwaggerDto()
-export class LoginCommand {
-  @IsEmail()
-  email: string;
-
-  @IsString()
-  password: string;
-}
 
 @SwaggerDto()
 export class RefreshTokenCommand {
   @IsString()
   refreshToken: string;
 
-  @IsString()
-  userId: string;
+  @IsInt()
+  userId: number;
 }
 
-export class UpdatePasswordCommand {
-  @IsEmail()
-  email: string;
+@SwaggerDto()
+export class SocialLoginCommand {
+  @IsString()
+  @IsNotEmpty()
+  snsId: string;
 
   @IsString()
-  currentPassword: string;
+  @IsNotEmpty()
+  nickname: string;
 
   @IsString()
-  newPassword: string;
+  @IsNotEmpty()
+  profileImageUrl: string;
+}
+
+@SwaggerDto()
+export class CreateUserCommand {
+  @IsString()
+  @IsNotEmpty()
+  snsId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  nickname: string;
+
+  @IsString()
+  @IsNotEmpty()
+  profileImageUrl: string;
 }
 
 export interface AuthUseCase {
-  login(command: LoginCommand): Promise<IToken>;
+  loginWithSocial(command: SocialLoginCommand): Promise<IToken>;
   refreshToken(command: RefreshTokenCommand): Promise<IToken>;
-  updatePassword(command: UpdatePasswordCommand): Promise<boolean>;
 }
