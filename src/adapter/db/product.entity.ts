@@ -63,4 +63,7 @@ export class ProductDbEntity {
 
   @OneToMany(() => RecommendSessionResultDbEntity, result => result.product)
   results: Rel<RecommendSessionResultDbEntity>[];
+
+  @Property()
+  deletedAt?: Date | null;
 }

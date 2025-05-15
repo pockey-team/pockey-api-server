@@ -11,6 +11,9 @@ export class WishlistDbEntity {
   @Property()
   productId!: number;
 
+  @Property()
+  receiverName: string;
+
   @Property({ onCreate: () => new Date() })
   createdAt: Date;
 }

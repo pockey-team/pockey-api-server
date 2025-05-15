@@ -1,6 +1,6 @@
-import { CreateWishlistCommand } from '../in/wishlist/WishlistUseCase';
+import { AddWishlistCommand } from '../in/wishlist/WishlistUseCase';
 
 export interface WishlistDbCommandPort {
-  createWishlist(command: CreateWishlistCommand): Promise<void>;
-  remove(wishlistId: number): Promise<void>;
+  addToWishlist(command: AddWishlistCommand): Promise<void>;
+  removeWishlist(wishlistId: number): Promise<void>;
 }
