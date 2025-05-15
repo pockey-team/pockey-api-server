@@ -120,6 +120,33 @@ describe('AuthService', () => {
       expect(recommendSessionCommandPortMock.updateSessionOwner).not.toHaveBeenCalled();
     });
 
+    it('로그인시 deviceId가 있는 경우 세션 소유자를 업데이트한다', async () => {
+      // given
+      const snsId = 'sns-user-1';
+      queryPortMock.getUserBySnsId.mockResolvedValue(userMockData);
+      jwtService.sign.mockReturnValueOnce('accessToken').mockReturnValueOnce('refreshToken');
+
+      const command: SocialLoginCommand = {
+        snsId,
+        nickname: '무시될 유저',
+        profileImageUrl: 'http://irrelevant.com/image.jpg',
+        deviceId: 'device-id-123',
+      };
+
+      // when
+      const result = await service.loginWithSocial(command);
+
+      // then
+      expect(result).toEqual({ accessToken: 'accessToken', refreshToken: 'refreshToken' });
+      expect(queryPortMock.getUserBySnsId).toHaveBeenCalledTimes(1);
+      expect(queryPortMock.getUserBySnsId).toHaveBeenCalledWith(snsId);
+      expect(commandPortMock.createUser).not.toHaveBeenCalled();
+      expect(recommendSessionCommandPortMock.updateSessionOwner).toHaveBeenCalledWith(
+        command.deviceId,
+        userMockData.id,
+      );
+    });
+
     it('회원가입시 deviceId가 있는 경우 세션 소유자를 업데이트한다', async () => {
       // given
       queryPortMock.getUserBySnsId.mockResolvedValueOnce(null);
