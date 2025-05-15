@@ -49,4 +49,7 @@ export class ProductDbEntity {
 
   @Property({ onCreate: () => new Date() })
   createdAt: Date;
+
+  @Property()
+  deletedAt?: Date | null;
 }

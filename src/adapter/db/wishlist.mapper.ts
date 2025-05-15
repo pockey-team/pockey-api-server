@@ -7,6 +7,7 @@ export const mapToWishlist = (dbEntity: WishlistDbEntity): Wishlist => {
     id: dbEntity.id,
     userId: dbEntity.userId,
     productId: dbEntity.productId,
+    receiverName: dbEntity.receiverName,
     createdAt: dbEntity.createdAt,
   };
 };

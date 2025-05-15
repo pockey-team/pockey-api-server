@@ -1,12 +1,24 @@
-import { Wishlist } from 'src/domain/wishlist';
+import { IsNumber, IsString } from 'class-validator';
+import { SwaggerDto } from 'src/common/decorators/swagger-dto.decorator';
+import { WishlistGroupedByReceiver } from 'src/domain/wishlist';
 
-export interface CreateWishlistCommand {
+@SwaggerDto()
+export class AddToWishlistRequest {
+  @IsNumber()
+  productId: number;
+
+  @IsString()
+  receiverName: string;
+}
+
+export interface AddWishlistCommand {
   userId: number;
   productId: number;
+  receiverName: string;
 }
 
 export interface WishlistUseCase {
-  addToWishlist(command: CreateWishlistCommand): Promise<void>;
+  addToWishlist(command: AddWishlistCommand): Promise<void>;
   removeFromWishlist(wishlistId: number): Promise<void>;
-  getWishlist(userId: number): Promise<Wishlist[]>;
+  getGroupedByReceiver(userId: number): Promise<WishlistGroupedByReceiver[]>;
 }
