@@ -17,6 +17,7 @@ export class CreateResultCommand {
   recommendResults: {
     productId: number;
     reason: string;
+    minifiedReason: string;
     order: number;
   }[];
 }

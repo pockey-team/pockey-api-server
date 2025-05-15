@@ -9,7 +9,7 @@ export const recommendSessionMockData: Readonly<RecommendSession> = {
   id: 'recommend-session-uuid-v7',
   receiverName: '홍길동',
   steps: [],
-  result: undefined,
+  results: [],
   endedAt: undefined,
 };
 
@@ -25,5 +25,6 @@ export const recommendSessionStepMockData: Readonly<RecommendSessionBaseStep> = 
 export const recommendSessionResultMockData: Readonly<RecommendSessionResult> = {
   product: productMockData,
   reason: '추천 결과',
+  minifiedReason: '바쁜 하루를 마친 후 손끝에 잔잔한 위로를',
   order: 1,
 };

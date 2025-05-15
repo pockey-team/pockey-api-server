@@ -10,7 +10,7 @@ export class RecommendSession {
   id: string;
   receiverName: string;
   steps: RecommendSessionBaseStep[];
-  result?: RecommendSessionResult;
+  results?: RecommendSessionResult[];
   endedAt?: Date;
 }
 
@@ -65,6 +65,7 @@ export class RecommendSessionStep {
 export class RecommendSessionResult {
   product: Product;
   reason: string;
+  minifiedReason: string;
   order: number;
 }
 

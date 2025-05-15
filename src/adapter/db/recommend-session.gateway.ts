@@ -39,7 +39,10 @@ export class RecommendSessionGateway
   ) {}
 
   async getSessionById(id: string): Promise<RecommendSession> {
-    const session = await this.sessionRepository.findOne({ id }, { populate: ['steps', 'result'] });
+    const session = await this.sessionRepository.findOne(
+      { id },
+      { populate: ['steps', 'results'] },
+    );
     if (!session) {
       throw new NotFoundException();
     }
@@ -109,10 +112,13 @@ export class RecommendSessionGateway
       resultEntity.session = session;
       resultEntity.product = product;
       resultEntity.reason = result.reason;
+      resultEntity.minifiedReason = result.minifiedReason;
       resultEntity.order = result.order;
-      await this.em.persistAndFlush(resultEntity);
+
+      this.em.persist(resultEntity);
       results.push(resultEntity);
     }
+    await this.em.flush();
 
     return results.map(mapToRecommendSessionResult);
   }
