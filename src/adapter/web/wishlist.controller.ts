@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, Post } from '@nestjs/common';
 import {
   AddToWishlistRequest,
   AddWishlistCommand,
@@ -8,9 +8,12 @@ import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { User } from 'src/domain/user';
 import { WishlistGroupedByReceiver } from 'src/domain/wishlist';
 
-@Controller('wishlist')
+@Controller()
 export class WishlistController {
-  constructor(private readonly wishlistUseCase: WishlistUseCase) {}
+  constructor(
+    @Inject('WishlistUseCase')
+    private readonly wishlistUseCase: WishlistUseCase,
+  ) {}
 
   @Post()
   async addToWishlist(@Body() body: AddToWishlistRequest, @GetUser() user: User): Promise<void> {

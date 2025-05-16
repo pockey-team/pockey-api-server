@@ -19,15 +19,10 @@ describe('WishlistService', () => {
       providers: [
         WishlistService,
         {
-          provide: 'WishlistDbCommandPort',
+          provide: 'WishlistGateway',
           useValue: {
-            createWishlist: jest.fn(),
-            remove: jest.fn(),
-          },
-        },
-        {
-          provide: 'WishlistDbQueryPort',
-          useValue: {
+            addToWishlist: jest.fn(),
+            removeWishlist: jest.fn(),
             getGroupedByReceiver: jest.fn(),
           },
         },
@@ -35,8 +30,8 @@ describe('WishlistService', () => {
     }).compile();
 
     service = module.get<WishlistService>(WishlistService);
-    queryPortMock = module.get<jest.Mocked<WishlistDbQueryPort>>('WishlistDbQueryPort');
-    commandPortMock = module.get<jest.Mocked<WishlistDbCommandPort>>('WishlistDbCommandPort');
+    queryPortMock = module.get<jest.Mocked<WishlistDbQueryPort>>('WishlistGateway');
+    commandPortMock = module.get<jest.Mocked<WishlistDbCommandPort>>('WishlistGateway');
   });
 
   it('should be defined', () => {
@@ -84,7 +79,7 @@ describe('WishlistService', () => {
     it('삭제된 상품의 경우 deleted: true로 응답해야 한다', async () => {
       //given
       const userId = 1;
-      queryPortMock.getGroupedByReceiver.mockRejectedValueOnce(wishlistGroupedWithDeletedMock);
+      queryPortMock.getGroupedByReceiver.mockResolvedValueOnce(wishlistGroupedWithDeletedMock);
 
       //when
       const result = await service.getGroupedByReceiver(userId);
