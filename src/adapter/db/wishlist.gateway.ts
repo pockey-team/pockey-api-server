@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/core';
 import { EntityRepository } from '@mikro-orm/mysql';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { AddWishlistCommand } from 'src/application/port/in/wishlist/WishlistUseCase';
 import { WishlistDbCommandPort } from 'src/application/port/out/WishlistDbCommandPort';
 import { WishlistDbQueryPort } from 'src/application/port/out/WishlistDbQueryPort';
@@ -16,7 +16,9 @@ export class WishlistGateway implements WishlistDbCommandPort, WishlistDbQueryPo
   constructor(
     @InjectRepository(WishlistDbEntity)
     private readonly wishlistRepository: EntityRepository<WishlistDbEntity>,
+    @InjectRepository(ProductDbEntity)
     private readonly productRepository: EntityRepository<ProductDbEntity>,
+    @Inject(EntityManager)
     private readonly em: EntityManager,
   ) {}
 
