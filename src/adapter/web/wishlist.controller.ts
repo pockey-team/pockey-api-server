@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Inject, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, Post, UseGuards } from '@nestjs/common';
 import {
   AddToWishlistRequest,
   AddWishlistCommand,
@@ -7,7 +7,9 @@ import {
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { User } from 'src/domain/user';
 import { WishlistGroupedByReceiver } from 'src/domain/wishlist';
+import { JwtAuthGuard } from 'src/framework/auth/guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller()
 export class WishlistController {
   constructor(
@@ -26,8 +28,8 @@ export class WishlistController {
   }
 
   @Delete(':id')
-  async removeFromWishlist(@Param('id') id: number): Promise<void> {
-    await this.wishlistUseCase.removeFromWishlist(Number(id));
+  async removeFromWishlist(@Param('id') id: number, @GetUser() user: User): Promise<void> {
+    await this.wishlistUseCase.removeFromWishlist(Number(id), user.id);
   }
 
   @Get()

@@ -6,6 +6,10 @@ import {
   wishlistGroupedMock,
   wishlistGroupedWithDeletedMock,
 } from '../../__mock__/wishlist.mock';
+import {
+  ForbiddenWishlistAccessException,
+  WishlistNotFoundException,
+} from '../common/error/exception/wishlist.exception';
 import { WishlistDbCommandPort } from '../port/out/WishlistDbCommandPort';
 import { WishlistDbQueryPort } from '../port/out/WishlistDbQueryPort';
 
@@ -52,15 +56,42 @@ describe('WishlistService', () => {
   });
 
   describe('removeFromWishlist', () => {
-    it('위시리스트에서 상품을 삭제할 수 있다', async () => {
+    it('자신의 위시리스트에서 상품을 삭제할 수 있다', async () => {
       //given
       const wishlistId = 1;
+      const userId = 1;
 
       //when
-      await service.removeFromWishlist(wishlistId);
+      await service.removeFromWishlist(wishlistId, userId);
 
       //then
-      expect(commandPortMock.removeWishlist).toHaveBeenCalledWith(wishlistId);
+      expect(commandPortMock.removeWishlist).toHaveBeenCalledWith(wishlistId, userId);
+    });
+    it('존재하지 않는 위시리스트 ID일 경우 예외를 던진다', async () => {
+      // given
+      const wishlistId = 999;
+      const userId = 1;
+      commandPortMock.removeWishlist.mockImplementation(() => {
+        throw new WishlistNotFoundException();
+      });
+
+      // then
+      await expect(service.removeFromWishlist(wishlistId, userId)).rejects.toThrow(
+        WishlistNotFoundException,
+      );
+    });
+    it('다른 사용자의 위시리스트일 경우 예외를 던진다', async () => {
+      // given
+      const wishlistId = 1;
+      const userId = 999;
+      commandPortMock.removeWishlist.mockImplementation(() => {
+        throw new ForbiddenWishlistAccessException();
+      });
+
+      // then
+      await expect(service.removeFromWishlist(wishlistId, userId)).rejects.toThrow(
+        ForbiddenWishlistAccessException,
+      );
     });
   });
   describe('getGroupedByReceiver', () => {

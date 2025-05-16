@@ -17,4 +17,8 @@ export const ERROR_MESSAGES = {
     NOT_FOUND: '세션을 찾을 수 없습니다.',
     INVALID_ANSWER: '유효하지 않은 답변입니다.',
   },
+  WISHLIST: {
+    FORBIDDEN_DELETE: '본인의 위시리스트 항목만 삭제할 수 있습니다.',
+    NOT_FOUND: '위시리스트 항목을 찾을 수 없습니다.',
+  },
 } as const;

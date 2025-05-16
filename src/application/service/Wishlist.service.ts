@@ -18,8 +18,8 @@ export class WishlistService implements WishlistUseCase {
     await this.wishlistDbCommandPort.addToWishlist(command);
   }
 
-  async removeFromWishlist(wishlistId: number): Promise<void> {
-    await this.wishlistDbCommandPort.removeWishlist(wishlistId);
+  async removeFromWishlist(wishlistId: number, userId: number): Promise<void> {
+    await this.wishlistDbCommandPort.removeWishlist(wishlistId, userId);
   }
 
   async getGroupedByReceiver(userId: number): Promise<WishlistGroupedByReceiver[]> {

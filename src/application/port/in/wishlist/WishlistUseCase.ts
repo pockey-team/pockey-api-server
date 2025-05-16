@@ -19,6 +19,6 @@ export interface AddWishlistCommand {
 
 export interface WishlistUseCase {
   addToWishlist(command: AddWishlistCommand): Promise<void>;
-  removeFromWishlist(wishlistId: number): Promise<void>;
+  removeFromWishlist(wishlistId: number, userId: number): Promise<void>;
   getGroupedByReceiver(userId: number): Promise<WishlistGroupedByReceiver[]>;
 }

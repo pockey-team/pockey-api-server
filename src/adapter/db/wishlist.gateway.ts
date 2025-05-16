@@ -2,6 +2,10 @@ import { EntityManager } from '@mikro-orm/core';
 import { EntityRepository } from '@mikro-orm/mysql';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Inject, Injectable } from '@nestjs/common';
+import {
+  ForbiddenWishlistAccessException,
+  WishlistNotFoundException,
+} from 'src/application/common/error/exception/wishlist.exception';
 import { AddWishlistCommand } from 'src/application/port/in/wishlist/WishlistUseCase';
 import { WishlistDbCommandPort } from 'src/application/port/out/WishlistDbCommandPort';
 import { WishlistDbQueryPort } from 'src/application/port/out/WishlistDbQueryPort';
@@ -32,8 +36,17 @@ export class WishlistGateway implements WishlistDbCommandPort, WishlistDbQueryPo
     await this.em.persistAndFlush(entity);
   }
 
-  async removeWishlist(wishlistId: number): Promise<void> {
-    await this.wishlistRepository.nativeDelete({ id: wishlistId });
+  async removeWishlist(wishlistId: number, userId: number): Promise<void> {
+    const wishlist = await this.wishlistRepository.findOne({ id: wishlistId });
+
+    if (!wishlist) {
+      throw new WishlistNotFoundException();
+    }
+
+    if (wishlist.userId !== userId) {
+      throw new ForbiddenWishlistAccessException();
+    }
+    await this.em.removeAndFlush(wishlist);
   }
 
   async getGroupedByReceiver(userId: number): Promise<WishlistGroupedByReceiver[]> {
