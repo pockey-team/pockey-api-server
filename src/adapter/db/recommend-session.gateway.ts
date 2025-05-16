@@ -142,12 +142,6 @@ export class RecommendSessionGateway
   }
 
   async updateSessionOwner(deviceId: string, userId: number): Promise<void> {
-    const session = await this.sessionRepository.findOne({ deviceId });
-    if (!session) {
-      return;
-    }
-
-    session.userId = userId;
-    await this.em.persistAndFlush(session);
+    await this.sessionRepository.nativeUpdate({ deviceId }, { userId });
   }
 }
