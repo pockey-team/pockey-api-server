@@ -2,6 +2,7 @@ import { EntityManager, EntityRepository } from '@mikro-orm/mysql';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
+import { ProductDbEntity } from './product.entity';
 import { RecommendSessionResultDbEntity } from './recommend-session-result.entity';
 import { RecommendSessionStepDbEntity } from './recommend-session-step.entity';
 import { RecommendSessionDbEntity } from './recommend-session.entity';
@@ -10,6 +11,7 @@ import {
   mapToRecommendSessionResult,
   mapToRecommendSessionStep,
 } from './recommend-session.mapper';
+import { ProductNotFoundException } from '../../application/common/error/exception/product.exception';
 import { StartSessionCommand } from '../../application/port/in/recommend-session/RecommendSessionUseCase';
 import {
   AddStepCommand,
@@ -91,21 +93,29 @@ export class RecommendSessionGateway
     return mapToRecommendSessionStep(stepEntity);
   }
 
-  async createResult(command: CreateResultCommand): Promise<RecommendSessionResult> {
+  async createResult(command: CreateResultCommand): Promise<RecommendSessionResult[]> {
     const session = await this.sessionRepository.findOne(command.sessionId);
     if (!session) {
       throw new NotFoundException();
     }
 
-    const resultEntity = new RecommendSessionResultDbEntity();
-    resultEntity.session = session;
-    resultEntity.recommendedProductIds = command.recommendProductIds;
-    resultEntity.recommendText = command.recommendText;
+    const results: RecommendSessionResultDbEntity[] = [];
+    for (const result of command.recommendResults) {
+      const product = await this.em.findOne(ProductDbEntity, { id: result.productId });
+      if (!product) {
+        throw new ProductNotFoundException();
+      }
 
-    session.result = resultEntity;
-    await this.em.persistAndFlush(session);
+      const resultEntity = new RecommendSessionResultDbEntity();
+      resultEntity.session = session;
+      resultEntity.product = product;
+      resultEntity.reason = result.reason;
+      resultEntity.order = result.order;
+      await this.em.persistAndFlush(resultEntity);
+      results.push(resultEntity);
+    }
 
-    return mapToRecommendSessionResult(resultEntity);
+    return results.map(mapToRecommendSessionResult);
   }
 
   async updateAnswer(stepId: number, answer: string): Promise<void> {

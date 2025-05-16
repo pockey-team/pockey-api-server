@@ -15,14 +15,17 @@ export class AddStepCommand {
 export class CreateResultCommand {
   userId?: number;
   sessionId: string;
-  recommendProductIds: number[];
-  recommendText: string;
+  recommendResults: {
+    productId: number;
+    reason: string;
+    order: number;
+  }[];
 }
 
 export interface RecommendSessionDbCommandPort {
   startSession(command: StartSessionCommand): Promise<RecommendSession>;
   createStep(command: AddStepCommand): Promise<RecommendSessionStep>;
-  createResult(command: CreateResultCommand): Promise<RecommendSessionResult>;
+  createResult(command: CreateResultCommand): Promise<RecommendSessionResult[]>;
   updateAnswer(stepId: number, answer: string): Promise<void>;
   endSession(sessionId: string): Promise<void>;
 }

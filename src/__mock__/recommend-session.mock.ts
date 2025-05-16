@@ -1,3 +1,4 @@
+import { productMockData } from './product.mock';
 import {
   RecommendSession,
   RecommendSessionResult,
@@ -22,7 +23,7 @@ export const recommendSessionStepMockData: Readonly<RecommendSessionStep> = {
 };
 
 export const recommendSessionResultMockData: Readonly<RecommendSessionResult> = {
-  sessionId: 'recommend-session-uuid-v7',
-  recommendProductIds: [1, 2, 3],
-  recommendText: '추천 결과',
+  product: productMockData,
+  reason: '추천 결과',
+  order: 1,
 };

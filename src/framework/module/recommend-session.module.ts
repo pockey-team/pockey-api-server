@@ -8,6 +8,8 @@ import {
 } from '../../adapter/db';
 import { CommonQuestionDbEntity } from '../../adapter/db/common-question.entity';
 import { CommonQuestionGateway } from '../../adapter/db/common-question.gateway';
+import { ProductDbEntity } from '../../adapter/db/product.entity';
+import { ProductGateway } from '../../adapter/db/product.gateway';
 import { RecommendSessionGateway } from '../../adapter/db/recommend-session.gateway';
 import { OpenAiClient } from '../../adapter/llm/openai.client';
 import { RecommendSessionController } from '../../adapter/web/recommend-session.controller';
@@ -17,6 +19,7 @@ import { RecommendSessionService } from '../../application/service/recommend-ses
   imports: [
     MikroOrmModule.forFeature([
       CommonQuestionDbEntity,
+      ProductDbEntity,
       RecommendSessionDbEntity,
       RecommendSessionStepDbEntity,
       RecommendSessionResultDbEntity,
@@ -26,6 +29,10 @@ import { RecommendSessionService } from '../../application/service/recommend-ses
   providers: [
     OpenAiClient,
     {
+      provide: 'CommonQuestionGateway',
+      useClass: CommonQuestionGateway,
+    },
+    {
       provide: 'RecommendSessionUseCase',
       useClass: RecommendSessionService,
     },
@@ -34,8 +41,8 @@ import { RecommendSessionService } from '../../application/service/recommend-ses
       useClass: RecommendSessionGateway,
     },
     {
-      provide: 'CommonQuestionGateway',
-      useClass: CommonQuestionGateway,
+      provide: 'ProductGateway',
+      useClass: ProductGateway,
     },
   ],
 })
