@@ -5,7 +5,6 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 
-import { JwtAuthGuard } from './framework/auth/guard';
 import { setupSwagger } from './framework/config/swagger.config';
 import { WinstonLogger } from './framework/config/winstone.logger';
 import { AppModule } from './framework/module/app.module';
@@ -33,9 +32,6 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, fastifyAdapter, {
     logger: new WinstonLogger(),
   });
-
-  const jwtAuthGuard = app.get(JwtAuthGuard);
-  app.useGlobalGuards(jwtAuthGuard);
 
   setupSwagger(app);
 
