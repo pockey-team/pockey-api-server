@@ -4,8 +4,12 @@ import { OpenAiClient } from '../../adapter/llm/openai.client';
 import { retry } from '../../common/util/retry.util';
 import {
   RecommendSession,
+  RecommendSessionFirstStep,
+  RecommendSessionOccasionStep,
   RecommendSessionResult,
   RecommendSessionStep,
+  RecommendSessionStepResponse,
+  RecommendSessionStepType,
 } from '../../domain/recommend-session';
 import {
   RecommendProductNotFoundException,
@@ -25,6 +29,28 @@ import { RecommendSessionDbQueryPort } from '../port/out/RecommendSessionDbQuery
 
 @Injectable()
 export class RecommendSessionService implements RecommendSessionUseCase {
+  private readonly STEP_COUNT = {
+    setupCount: 4,
+    occasionCount: 1,
+    questionCount: 4,
+  };
+
+  private readonly optionMap = {
+    ['생일 축하']: { key: 'birthday', title: '생일 축하', description: '님의 생일이에요' },
+    ['고마워요']: { key: 'thankyou', title: '고마워요', description: '님께 고마운 마음이에요' },
+    ['축하해요']: {
+      key: 'congratulation',
+      title: '축하해요',
+      description: '님께 기쁜 마음을 전해요',
+    },
+    ['응원해요']: { key: 'support', title: '응원해요', description: '님을 응원해요' },
+    ['미안한 마음']: {
+      key: 'sorry',
+      title: '미안한 마음',
+      description: '님께 미안한 마음을 전해요',
+    },
+  };
+
   constructor(
     @Inject('CommonQuestionGateway')
     private readonly commonQuestionDbQueryPort: CommonQuestionDbQueryPort,
@@ -38,7 +64,7 @@ export class RecommendSessionService implements RecommendSessionUseCase {
     private readonly openAiClient: OpenAiClient,
   ) {}
 
-  async startSession(command: StartSessionCommand): Promise<RecommendSessionStep> {
+  async startSession(command: StartSessionCommand): Promise<RecommendSessionFirstStep> {
     const session = await this.sessionDbCommandPort.startSession(command);
 
     const commonQuestions = await this.commonQuestionDbQueryPort.getCommonQuestionsByStep(1);
@@ -46,16 +72,21 @@ export class RecommendSessionService implements RecommendSessionUseCase {
     const question = `${session.receiverName}${commonQuestion.question}`;
     const options = commonQuestion.options;
 
-    return this.sessionDbCommandPort.createStep({
+    const recommendSessionStep = await this.sessionDbCommandPort.createStep({
       sessionId: session.id,
       question,
       options,
     });
+
+    return {
+      ...recommendSessionStep,
+      ...this.STEP_COUNT,
+      type: RecommendSessionStepType.SETUP,
+      sessionId: session.id,
+    };
   }
 
-  async submitAnswer(
-    command: SubmitAnswerCommand,
-  ): Promise<RecommendSessionStep | RecommendSessionResult[]> {
+  async submitAnswer(command: SubmitAnswerCommand): Promise<RecommendSessionStepResponse> {
     const session = await this.sessionDbQueryPort.getSessionById(command.sessionId);
     if (!session) {
       throw new RecommendSessionNotFoundException();
@@ -78,14 +109,19 @@ export class RecommendSessionService implements RecommendSessionUseCase {
     return this.generateNextStep(command.sessionId, session.receiverName, nextStep);
   }
 
-  private async generateNextStep(sessionId: string, receiverName: string, step: number) {
+  private async generateNextStep(
+    sessionId: string,
+    receiverName: string,
+    step: number,
+  ): Promise<RecommendSessionStep | RecommendSessionOccasionStep> {
     switch (step) {
       case 1:
       case 2:
       case 3:
       case 4:
-      case 5:
         return this.generateCommonQuestion(sessionId, receiverName, step);
+      case 5:
+        return this.generateOccasionQuestion(sessionId, receiverName, step);
       case 6:
         return this.generateRandomCommonQuestion(sessionId, step);
       default:
@@ -100,12 +136,42 @@ export class RecommendSessionService implements RecommendSessionUseCase {
   ): Promise<RecommendSessionStep> {
     const commonQuestions = await this.commonQuestionDbQueryPort.getCommonQuestionsByStep(step);
     const commonQuestion = commonQuestions[0];
-    return this.sessionDbCommandPort.createStep({
+    const recommendSessionStep = await this.sessionDbCommandPort.createStep({
       sessionId,
       question: `${receiverName}${commonQuestion.question}`,
       options: commonQuestion.options,
-      optionImages: commonQuestion.optionImages,
     });
+
+    return { ...recommendSessionStep, type: RecommendSessionStepType.SETUP };
+  }
+
+  private async generateOccasionQuestion(
+    sessionId: string,
+    receiverName: string,
+    step: number,
+  ): Promise<RecommendSessionOccasionStep> {
+    const commonQuestions = await this.commonQuestionDbQueryPort.getCommonQuestionsByStep(step);
+    const commonQuestion = commonQuestions[0];
+    const recommendSessionStep = await this.sessionDbCommandPort.createStep({
+      sessionId,
+      question: `${receiverName}${commonQuestion.question}`,
+      options: commonQuestion.options,
+    });
+
+    const options = commonQuestion.options
+      .map(option => this.optionMap[option as keyof typeof this.optionMap])
+      .map(option => ({
+        key: option.key,
+        title: option.title,
+        description: `${receiverName}${option.description}`,
+      }));
+
+    return {
+      ...recommendSessionStep,
+      type: RecommendSessionStepType.OCCASION,
+      description: '선물을 주고자 하는 상황을 알려주세요',
+      options,
+    };
   }
 
   private async generateRandomCommonQuestion(
@@ -114,11 +180,16 @@ export class RecommendSessionService implements RecommendSessionUseCase {
   ): Promise<RecommendSessionStep> {
     const commonQuestions = await this.commonQuestionDbQueryPort.getCommonQuestionsByStep(step);
     const selectedQuestion = commonQuestions[Math.floor(Math.random() * commonQuestions.length)];
-    return this.sessionDbCommandPort.createStep({
+    const recommendSessionStep = await this.sessionDbCommandPort.createStep({
       sessionId,
       question: selectedQuestion.question,
       options: selectedQuestion.options,
     });
+
+    return {
+      ...recommendSessionStep,
+      type: RecommendSessionStepType.QUESTION,
+    };
   }
 
   private async generateLLMQuestion(sessionId: string): Promise<RecommendSessionStep> {
@@ -128,7 +199,15 @@ export class RecommendSessionService implements RecommendSessionUseCase {
     const generateQuestion = async () => await this.openAiClient.generateQuestion(input);
     const llmQuestion = await retry(generateQuestion, { maxRetries: 3 });
 
-    return this.sessionDbCommandPort.createStep({ sessionId, ...llmQuestion });
+    const recommendSessionStep = await this.sessionDbCommandPort.createStep({
+      sessionId,
+      ...llmQuestion,
+    });
+
+    return {
+      ...recommendSessionStep,
+      type: RecommendSessionStepType.QUESTION,
+    };
   }
 
   async endSession(sessionId: string): Promise<void> {
@@ -164,7 +243,10 @@ export class RecommendSessionService implements RecommendSessionUseCase {
       throw new RecommendProductNotFoundException();
     }
 
-    const llmAnswer = await this.openAiClient.recommendGift(input, recommendProducts);
+    const llmAnswer = await retry(
+      async () => await this.openAiClient.recommendGift(input, recommendProducts),
+      { maxRetries: 3 },
+    );
     const result = await this.sessionDbCommandPort.createResult({
       sessionId,
       recommendResults: llmAnswer.map((answer: { id: number; reason: string }, index: number) => ({

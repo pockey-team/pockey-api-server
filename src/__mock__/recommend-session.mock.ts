@@ -1,8 +1,8 @@
 import { productMockData } from './product.mock';
 import {
   RecommendSession,
+  RecommendSessionBaseStep,
   RecommendSessionResult,
-  RecommendSessionStep,
 } from '../domain/recommend-session';
 
 export const recommendSessionMockData: Readonly<RecommendSession> = {
@@ -13,7 +13,7 @@ export const recommendSessionMockData: Readonly<RecommendSession> = {
   endedAt: undefined,
 };
 
-export const recommendSessionStepMockData: Readonly<RecommendSessionStep> = {
+export const recommendSessionStepMockData: Readonly<RecommendSessionBaseStep> = {
   id: 1,
   sessionId: 'recommend-session-uuid-v7',
   step: 1,

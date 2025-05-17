@@ -1,6 +1,6 @@
-import { RecommendSession, RecommendSessionStep } from '../../../domain/recommend-session';
+import { RecommendSession, RecommendSessionBaseStep } from '../../../domain/recommend-session';
 
 export interface RecommendSessionDbQueryPort {
   getSessionById(sessionId: string): Promise<RecommendSession>;
-  getLastStep(sessionId: string): Promise<RecommendSessionStep>;
+  getLastStep(sessionId: string): Promise<RecommendSessionBaseStep>;
 }
