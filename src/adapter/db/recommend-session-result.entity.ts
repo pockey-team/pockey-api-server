@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, Rel } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, Rel } from '@mikro-orm/core';
 
 import { RecommendSessionDbEntity } from '.';
 import { ProductDbEntity } from './product.entity';
@@ -12,12 +12,15 @@ export class RecommendSessionResultDbEntity {
   reason: string;
 
   @Property()
+  minifiedReason: string;
+
+  @Property()
   order: number;
 
   @Property({ onCreate: () => new Date() })
   createdAt: Date;
 
-  @OneToOne(() => RecommendSessionDbEntity)
+  @ManyToOne(() => RecommendSessionDbEntity)
   session: Rel<RecommendSessionDbEntity>;
 
   @ManyToOne(() => ProductDbEntity)

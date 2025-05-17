@@ -193,7 +193,7 @@ describe('RecommendSessionService', () => {
       const lastStep: RecommendSessionBaseStep = {
         id: 4,
         sessionId: session.id,
-        step: 4,
+        step: 5,
         question: '질문',
         options: ['옵션1', '옵션2', '옵션3', '옵션4'],
       };
@@ -388,8 +388,15 @@ describe('RecommendSessionService', () => {
       };
       queryPortMock.getLastStep.mockResolvedValue(lastStep);
 
-      const result = [{ product: productMockData, reason: '추천 이유 1', order: 1 }];
-      commandPortMock.createResult.mockResolvedValue(result);
+      const results = [
+        {
+          product: productMockData,
+          reason: '추천 이유 1',
+          minifiedReason: '추천 이유 1',
+          order: 1,
+        },
+      ];
+      commandPortMock.createResult.mockResolvedValue(results);
 
       const command: SubmitAnswerCommand = { sessionId: session.id, answer: '옵션1' };
 
@@ -397,7 +404,7 @@ describe('RecommendSessionService', () => {
       const submitResult = await service.submitAnswer(command);
 
       // then
-      expect(submitResult).toEqual(result);
+      expect(submitResult).toEqual(results);
       expect(queryPortMock.getSessionById).toHaveBeenCalledTimes(2);
       expect(queryPortMock.getSessionById).toHaveBeenCalledWith(session.id);
       expect(queryPortMock.getLastStep).toHaveBeenCalledTimes(1);

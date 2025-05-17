@@ -16,7 +16,10 @@ export const mapToRecommendSession = (dbEntity: RecommendSessionDbEntity): Recom
       dbEntity.steps && dbEntity.steps.length > 0
         ? dbEntity.steps.map(step => mapToRecommendSessionBaseStep(step))
         : [],
-    result: dbEntity.result ? mapToRecommendSessionResult(dbEntity.result) : undefined,
+    results:
+      dbEntity.results && dbEntity.results.length > 0
+        ? dbEntity.results.map(result => mapToRecommendSessionResult(result))
+        : [],
     endedAt: dbEntity.endedAt ?? undefined,
   };
 };
@@ -40,6 +43,7 @@ export const mapToRecommendSessionResult = (
   return {
     product: mapToProduct(dbEntity.product),
     reason: dbEntity.reason,
+    minifiedReason: dbEntity.minifiedReason,
     order: dbEntity.order,
   };
 };

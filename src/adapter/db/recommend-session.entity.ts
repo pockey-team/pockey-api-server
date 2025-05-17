@@ -1,12 +1,4 @@
-import {
-  Collection,
-  Entity,
-  OneToMany,
-  OneToOne,
-  PrimaryKey,
-  Property,
-  Rel,
-} from '@mikro-orm/core';
+import { Collection, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { uuidv7 } from 'uuidv7';
 
 import { RecommendSessionResultDbEntity, RecommendSessionStepDbEntity } from '.';
@@ -34,6 +26,6 @@ export class RecommendSessionDbEntity {
   @OneToMany(() => RecommendSessionStepDbEntity, entity => entity.session, { nullable: true })
   steps? = new Collection<RecommendSessionStepDbEntity>(this);
 
-  @OneToOne(() => RecommendSessionResultDbEntity, { nullable: true, mappedBy: 'session' })
-  result?: Rel<RecommendSessionResultDbEntity>;
+  @OneToMany(() => RecommendSessionResultDbEntity, entity => entity.session, { nullable: true })
+  results? = new Collection<RecommendSessionResultDbEntity>(this);
 }

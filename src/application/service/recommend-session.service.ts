@@ -249,11 +249,14 @@ export class RecommendSessionService implements RecommendSessionUseCase {
     );
     const result = await this.sessionDbCommandPort.createResult({
       sessionId,
-      recommendResults: llmAnswer.map((answer: { id: number; reason: string }, index: number) => ({
-        productId: +answer.id,
-        reason: answer.reason,
-        order: index + 1,
-      })),
+      recommendResults: llmAnswer.map(
+        (answer: { id: number; reason: string; minifiedReason: string }, index: number) => ({
+          productId: +answer.id,
+          reason: answer.reason,
+          minifiedReason: answer.minifiedReason,
+          order: index + 1,
+        }),
+      ),
     });
     await this.sessionDbCommandPort.endSession(sessionId);
 
