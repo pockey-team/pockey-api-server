@@ -10,6 +10,7 @@ import {
   RefreshTokenCommand,
   SocialLoginCommand,
 } from '../port/in/auth/AuthUseCase';
+import { RecommendSessionDbCommandPort } from '../port/out/RecommendSessionDbCommandPort';
 import { UserDbCommandPort } from '../port/out/UserDbCommandPort';
 import { UserDbQueryPort } from '../port/out/UserDbQueryPort';
 
@@ -21,12 +22,18 @@ export class AuthService implements AuthUseCase {
     private readonly userDbQueryPort: UserDbQueryPort,
     @Inject('UserGateway')
     private readonly userDbCommandPort: UserDbCommandPort,
+
+    @Inject('RecommendSessionGateway')
+    private readonly recommendSessionDbCommandPort: RecommendSessionDbCommandPort,
   ) {}
 
   async loginWithSocial(command: SocialLoginCommand): Promise<IToken> {
     const user = await this.userDbQueryPort.getUserBySnsId(command.snsId);
 
     if (user) {
+      if (command.deviceId) {
+        await this.recommendSessionDbCommandPort.updateSessionOwner(command.deviceId, user.id);
+      }
       return this.generateTokens(user.id!);
     }
 
@@ -37,6 +44,11 @@ export class AuthService implements AuthUseCase {
     };
 
     const newUserId = await this.userDbCommandPort.createUser(createUser);
+
+    if (command.deviceId) {
+      await this.recommendSessionDbCommandPort.updateSessionOwner(command.deviceId, newUserId);
+    }
+
     return this.generateTokens(newUserId);
   }
 

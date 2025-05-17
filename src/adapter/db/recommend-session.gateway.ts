@@ -140,4 +140,8 @@ export class RecommendSessionGateway
     session.endedAt = new Date();
     await this.em.persistAndFlush(session);
   }
+
+  async updateSessionOwner(deviceId: string, userId: number): Promise<void> {
+    await this.sessionRepository.nativeUpdate({ deviceId }, { userId });
+  }
 }

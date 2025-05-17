@@ -6,6 +6,7 @@ import { userMockData } from '../../__mock__/user.mock';
 import { UserRole } from '../../domain/user';
 import { InvalidRefreshTokenException } from '../common/error/exception';
 import { RefreshTokenCommand, SocialLoginCommand } from '../port/in/auth/AuthUseCase';
+import { RecommendSessionDbCommandPort } from '../port/out/RecommendSessionDbCommandPort';
 import { UserDbCommandPort } from '../port/out/UserDbCommandPort';
 import { UserDbQueryPort } from '../port/out/UserDbQueryPort';
 
@@ -16,6 +17,7 @@ describe('AuthService', () => {
   let jwtService: jest.Mocked<JwtService>;
   let queryPortMock: jest.Mocked<UserDbQueryPort>;
   let commandPortMock: jest.Mocked<UserDbCommandPort>;
+  let recommendSessionCommandPortMock: jest.Mocked<RecommendSessionDbCommandPort>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -36,6 +38,12 @@ describe('AuthService', () => {
             verify: jest.fn(),
           },
         },
+        {
+          provide: 'RecommendSessionGateway',
+          useValue: {
+            updateSessionOwner: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -43,6 +51,8 @@ describe('AuthService', () => {
     jwtService = module.get(JwtService);
     queryPortMock = module.get<jest.Mocked<UserDbQueryPort>>('UserGateway');
     commandPortMock = module.get<jest.Mocked<UserDbCommandPort>>('UserGateway');
+    recommendSessionCommandPortMock =
+      module.get<jest.Mocked<RecommendSessionDbCommandPort>>('RecommendSessionGateway');
   });
 
   it('should be defined', () => {
@@ -64,6 +74,7 @@ describe('AuthService', () => {
         snsId,
         nickname: '무시될 유저',
         profileImageUrl: 'http://irrelevant.com/image.jpg',
+        deviceId: undefined,
       };
 
       // when
@@ -74,12 +85,13 @@ describe('AuthService', () => {
       expect(queryPortMock.getUserBySnsId).toHaveBeenCalledTimes(1);
       expect(queryPortMock.getUserBySnsId).toHaveBeenCalledWith(snsId);
       expect(commandPortMock.createUser).not.toHaveBeenCalled();
+      expect(recommendSessionCommandPortMock.updateSessionOwner).not.toHaveBeenCalled();
     });
+
     it('snsId로 가입한 계정이 없는 경우 회원가입에 성공한다', async () => {
       // given
       queryPortMock.getUserBySnsId.mockResolvedValueOnce(null);
 
-      commandPortMock.createUser.mockResolvedValue(2);
       jwtService.sign.mockReturnValueOnce('accessToken').mockReturnValueOnce('refreshToken');
 
       const newSnsId = 'sns-new-456';
@@ -88,6 +100,7 @@ describe('AuthService', () => {
         snsId: newSnsId,
         nickname: '새로운 유저',
         profileImageUrl: 'http://new.image.jpg',
+        deviceId: undefined,
       };
 
       // when
@@ -103,6 +116,71 @@ describe('AuthService', () => {
           nickname: command.nickname,
           profileImageUrl: command.profileImageUrl,
         }),
+      );
+      expect(recommendSessionCommandPortMock.updateSessionOwner).not.toHaveBeenCalled();
+    });
+
+    it('로그인시 deviceId가 있는 경우 세션 소유자를 업데이트한다', async () => {
+      // given
+      const snsId = 'sns-user-1';
+      queryPortMock.getUserBySnsId.mockResolvedValue(userMockData);
+      jwtService.sign.mockReturnValueOnce('accessToken').mockReturnValueOnce('refreshToken');
+
+      const command: SocialLoginCommand = {
+        snsId,
+        nickname: '무시될 유저',
+        profileImageUrl: 'http://irrelevant.com/image.jpg',
+        deviceId: 'device-id-123',
+      };
+
+      // when
+      const result = await service.loginWithSocial(command);
+
+      // then
+      expect(result).toEqual({ accessToken: 'accessToken', refreshToken: 'refreshToken' });
+      expect(queryPortMock.getUserBySnsId).toHaveBeenCalledTimes(1);
+      expect(queryPortMock.getUserBySnsId).toHaveBeenCalledWith(snsId);
+      expect(commandPortMock.createUser).not.toHaveBeenCalled();
+      expect(recommendSessionCommandPortMock.updateSessionOwner).toHaveBeenCalledWith(
+        command.deviceId,
+        userMockData.id,
+      );
+    });
+
+    it('회원가입시 deviceId가 있는 경우 세션 소유자를 업데이트한다', async () => {
+      // given
+      queryPortMock.getUserBySnsId.mockResolvedValueOnce(null);
+
+      const userId = 2;
+      commandPortMock.createUser.mockResolvedValue(userId);
+      jwtService.sign.mockReturnValueOnce('accessToken').mockReturnValueOnce('refreshToken');
+
+      const newSnsId = 'sns-new-456';
+
+      const command: SocialLoginCommand = {
+        snsId: newSnsId,
+        nickname: '새로운 유저',
+        profileImageUrl: 'http://new.image.jpg',
+        deviceId: 'device-id-123',
+      };
+
+      // when
+      const result = await service.loginWithSocial(command);
+
+      // then
+      expect(result).toEqual({ accessToken: 'accessToken', refreshToken: 'refreshToken' });
+
+      expect(queryPortMock.getUserBySnsId).toHaveBeenCalledWith(command.snsId);
+      expect(commandPortMock.createUser).toHaveBeenCalledWith(
+        expect.objectContaining({
+          snsId: command.snsId,
+          nickname: command.nickname,
+          profileImageUrl: command.profileImageUrl,
+        }),
+      );
+      expect(recommendSessionCommandPortMock.updateSessionOwner).toHaveBeenCalledWith(
+        command.deviceId,
+        userId,
       );
     });
   });

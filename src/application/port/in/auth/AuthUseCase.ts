@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { SwaggerDto } from '../../../../common/decorators/swagger-dto.decorator';
 import { IToken } from '../../../../domain/token';
@@ -25,6 +25,10 @@ export class SocialLoginCommand {
   @IsString()
   @IsNotEmpty()
   profileImageUrl: string;
+
+  @IsOptional()
+  @IsString()
+  deviceId?: string;
 }
 
 @SwaggerDto()

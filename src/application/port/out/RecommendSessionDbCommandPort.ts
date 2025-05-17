@@ -27,5 +27,6 @@ export interface RecommendSessionDbCommandPort {
   createStep(command: AddStepCommand): Promise<RecommendSessionBaseStep>;
   createResult(command: CreateResultCommand): Promise<RecommendSessionResult[]>;
   updateAnswer(stepId: number, answer: string): Promise<void>;
+  updateSessionOwner(deviceId: string, userId: number): Promise<void>;
   endSession(sessionId: string): Promise<void>;
 }
