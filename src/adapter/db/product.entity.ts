@@ -10,17 +10,17 @@ export class ProductDbEntity {
   @Property({ length: 100 })
   name: string;
 
-  @Property({ length: 512 })
+  @Property({ length: 2048 })
   url: string;
 
   @Property({ length: 512 })
   imageUrl: string;
 
-  @Property({ length: 100 })
-  category: string;
+  @Property({ type: 'json' })
+  category: string[];
 
-  @Property({ length: 50 })
-  brand: string;
+  @Property({ length: 50, nullable: true })
+  brand?: string;
 
   @Property()
   price: number;
@@ -45,6 +45,12 @@ export class ProductDbEntity {
 
   @Property({ type: 'json' })
   tags: string[];
+
+  @Property({ type: 'json' })
+  action: string[];
+
+  @Property({ type: 'json' })
+  scene: string[];
 
   @Property({ type: 'json' })
   nextPickProductIds: number[];

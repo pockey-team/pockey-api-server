@@ -29,9 +29,9 @@ export class ProductGateway implements ProductDbQueryPort {
     const qb = this.productRepository.createQueryBuilder('product');
     qb.where({
       targetGender: { $in: query.targetGender },
-      ageRange: query.ageRange,
       priceRange: query.priceRange,
     });
+    qb.andWhere('JSON_CONTAINS(product.age_range, ?)', [JSON.stringify([query.ageRange])]);
     qb.andWhere('JSON_CONTAINS(product.friendship_level, ?)', [
       JSON.stringify([query.friendshipLevel]),
     ]);
