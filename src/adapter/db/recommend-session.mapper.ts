@@ -14,7 +14,9 @@ export const mapToRecommendSession = (dbEntity: RecommendSessionDbEntity): Recom
     receiverName: dbEntity.receiverName,
     steps:
       dbEntity.steps && dbEntity.steps.length > 0
-        ? dbEntity.steps.map(step => mapToRecommendSessionBaseStep(step))
+        ? dbEntity.steps
+            .filter(step => step.deletedAt === null) // FIXME: 삭제된 스텝은 조회하지 않도록 수정 필요
+            .map(step => mapToRecommendSessionBaseStep(step))
         : [],
     results:
       dbEntity.results && dbEntity.results.length > 0

@@ -39,13 +39,9 @@ export class RecommendSessionGateway
   ) {}
 
   async getSessionById(id: string): Promise<RecommendSession> {
-    const session = await this.sessionRepository
-      .createQueryBuilder('s')
-      .leftJoinAndSelect('s.steps', 'steps')
-      .leftJoinAndSelect('s.results', 'results')
-      .where('s.id = ?', [id])
-      .andWhere('steps.deleted_at IS NULL')
-      .getSingleResult();
+    const session = await this.sessionRepository.findOne(id, {
+      populate: ['steps', 'results'],
+    });
 
     if (!session) {
       throw new NotFoundException();

@@ -3,9 +3,9 @@ export class Product {
   name: string;
   url: string;
   imageUrl: string;
-  category: string;
-  brand: string;
-  price: number;
+  category: string[];
+  brand?: string;
+  price?: number;
   priceRange: string;
   ageRange: string;
   situation: string[];

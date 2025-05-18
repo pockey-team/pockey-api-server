@@ -6,7 +6,7 @@ export const productMockData: Readonly<Product> = {
   url: 'https://smartstore.naver.com/coredak/products/4785024689',
   imageUrl:
     'https://shop-phinf.pstatic.net/20230309_236/1678356887222OXhnk_JPEG/79492775933138141_1309223572.jpg?type=m510',
-  category: '여행용품',
+  category: ['여행용품'],
   brand: 'Kodak',
   price: 20000,
   priceRange: '2만원대',
