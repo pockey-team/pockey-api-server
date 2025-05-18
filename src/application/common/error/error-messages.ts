@@ -17,5 +17,6 @@ export const ERROR_MESSAGES = {
     NOT_FOUND: '세션을 찾을 수 없습니다.',
     INVALID_ANSWER: '유효하지 않은 답변입니다.',
     PRODUCT_NOT_FOUND: '추천할 상품을 찾을 수 없습니다.',
+    INVALID_STEP: '유효하지 않은 단계입니다.',
   },
 } as const;

@@ -20,7 +20,11 @@ export class RecommendSessionController {
 
   @Post(':sessionId/answer')
   async submitAnswer(@Param('sessionId') sessionId: string, @Body() command: SubmitAnswerRequest) {
-    return this.recommendSessionUseCase.submitAnswer({ sessionId, answer: command.answer });
+    return this.recommendSessionUseCase.submitAnswer({
+      sessionId,
+      answer: command.answer,
+      step: command.step,
+    });
   }
 
   @Delete(':sessionId')

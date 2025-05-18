@@ -25,3 +25,9 @@ export class RecommendProductNotFoundException extends NotFoundException {
     super(ERROR_MESSAGES.RECOMMEND_SESSION.PRODUCT_NOT_FOUND);
   }
 }
+
+export class RecommendSessionInvalidStepException extends BadRequestException {
+  constructor() {
+    super(ERROR_MESSAGES.RECOMMEND_SESSION.INVALID_STEP);
+  }
+}

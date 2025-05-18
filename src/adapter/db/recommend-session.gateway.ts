@@ -39,10 +39,14 @@ export class RecommendSessionGateway
   ) {}
 
   async getSessionById(id: string): Promise<RecommendSession> {
-    const session = await this.sessionRepository.findOne(
-      { id },
-      { populate: ['steps', 'results'] },
-    );
+    const session = await this.sessionRepository
+      .createQueryBuilder('s')
+      .leftJoinAndSelect('s.steps', 'steps')
+      .leftJoinAndSelect('s.results', 'results')
+      .where('s.id = ?', [id])
+      .andWhere('steps.deleted_at IS NULL')
+      .getSingleResult();
+
     if (!session) {
       throw new NotFoundException();
     }
@@ -51,7 +55,7 @@ export class RecommendSessionGateway
 
   async getLastStep(sessionId: string): Promise<RecommendSessionBaseStep> {
     const stepEntity = await this.stepRepository.findOne(
-      { session: { id: sessionId } },
+      { session: { id: sessionId }, deletedAt: null },
       { orderBy: { step: 'DESC' } },
     );
     if (!stepEntity) {
@@ -78,14 +82,9 @@ export class RecommendSessionGateway
       throw new NotFoundException();
     }
 
-    const lastStep = session.steps
-      ?.getItems()
-      .sort((a, b) => a.step - b.step)
-      .pop();
-
     const stepEntity = new RecommendSessionStepDbEntity();
     stepEntity.session = session;
-    stepEntity.step = lastStep ? lastStep.step + 1 : 1;
+    stepEntity.step = command.step;
     stepEntity.question = command.question;
     stepEntity.options = command.options;
 
@@ -132,6 +131,10 @@ export class RecommendSessionGateway
     await this.em.persistAndFlush(stepEntity);
   }
 
+  async updateSessionOwner(deviceId: string, userId: number): Promise<void> {
+    await this.sessionRepository.nativeUpdate({ deviceId }, { userId });
+  }
+
   async endSession(sessionId: string): Promise<void> {
     const session = await this.sessionRepository.findOne(sessionId);
     if (!session) {
@@ -141,7 +144,12 @@ export class RecommendSessionGateway
     await this.em.persistAndFlush(session);
   }
 
-  async updateSessionOwner(deviceId: string, userId: number): Promise<void> {
-    await this.sessionRepository.nativeUpdate({ deviceId }, { userId });
+  async removeProgressedSteps(sessionId: string, step: number): Promise<void> {
+    await this.stepRepository.nativeUpdate({ session: { id: sessionId }, step }, { answer: null });
+    await this.stepRepository.nativeUpdate(
+      { session: { id: sessionId }, step: { $gt: step } },
+      { deletedAt: new Date() },
+    );
+    await this.em.flush();
   }
 }

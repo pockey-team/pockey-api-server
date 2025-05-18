@@ -15,6 +15,7 @@ import {
   RecommendProductNotFoundException,
   RecommendSessionAlreadyEndedException,
   RecommendSessionInvalidAnswerException,
+  RecommendSessionInvalidStepException,
   RecommendSessionNotFoundException,
 } from '../common/error/exception/recommend-session.exception';
 import { ProductDbQueryPort } from '../port/in/product/ProductDbQueryPort';
@@ -74,6 +75,7 @@ export class RecommendSessionService implements RecommendSessionUseCase {
 
     const recommendSessionStep = await this.sessionDbCommandPort.createStep({
       sessionId: session.id,
+      step: 1,
       question,
       options,
     });
@@ -94,7 +96,20 @@ export class RecommendSessionService implements RecommendSessionUseCase {
       throw new RecommendSessionAlreadyEndedException();
     }
 
-    const lastStep = await this.sessionDbQueryPort.getLastStep(command.sessionId);
+    let lastStep = await this.sessionDbQueryPort.getLastStep(command.sessionId);
+    const isOverStep = command.step > lastStep.step;
+    if (isOverStep) {
+      throw new RecommendSessionInvalidStepException();
+    }
+
+    const isUnderStep = command.step < lastStep.step;
+    const isSameAndAlreadyAnswered = command.step === lastStep.step && lastStep.answer;
+
+    if (isUnderStep || isSameAndAlreadyAnswered) {
+      await this.sessionDbCommandPort.removeProgressedSteps(command.sessionId, command.step);
+      lastStep = await this.sessionDbQueryPort.getLastStep(command.sessionId);
+    }
+
     if (!lastStep.options.some(option => option === command.answer)) {
       throw new RecommendSessionInvalidAnswerException();
     }
@@ -125,7 +140,7 @@ export class RecommendSessionService implements RecommendSessionUseCase {
       case 6:
         return this.generateRandomCommonQuestion(sessionId, step);
       default:
-        return this.generateLLMQuestion(sessionId);
+        return this.generateLLMQuestion(sessionId, step);
     }
   }
 
@@ -138,6 +153,7 @@ export class RecommendSessionService implements RecommendSessionUseCase {
     const commonQuestion = commonQuestions[0];
     const recommendSessionStep = await this.sessionDbCommandPort.createStep({
       sessionId,
+      step,
       question: `${receiverName}${commonQuestion.question}`,
       options: commonQuestion.options,
     });
@@ -154,6 +170,7 @@ export class RecommendSessionService implements RecommendSessionUseCase {
     const commonQuestion = commonQuestions[0];
     const recommendSessionStep = await this.sessionDbCommandPort.createStep({
       sessionId,
+      step,
       question: `${receiverName}${commonQuestion.question}`,
       options: commonQuestion.options,
     });
@@ -182,6 +199,7 @@ export class RecommendSessionService implements RecommendSessionUseCase {
     const selectedQuestion = commonQuestions[Math.floor(Math.random() * commonQuestions.length)];
     const recommendSessionStep = await this.sessionDbCommandPort.createStep({
       sessionId,
+      step,
       question: selectedQuestion.question,
       options: selectedQuestion.options,
     });
@@ -192,7 +210,10 @@ export class RecommendSessionService implements RecommendSessionUseCase {
     };
   }
 
-  private async generateLLMQuestion(sessionId: string): Promise<RecommendSessionStep> {
+  private async generateLLMQuestion(
+    sessionId: string,
+    step: number,
+  ): Promise<RecommendSessionStep> {
     const session = await this.sessionDbQueryPort.getSessionById(sessionId);
 
     const input = this.generateQuestionLlmInput(session);
@@ -201,6 +222,7 @@ export class RecommendSessionService implements RecommendSessionUseCase {
 
     const recommendSessionStep = await this.sessionDbCommandPort.createStep({
       sessionId,
+      step,
       ...llmQuestion,
     });
 

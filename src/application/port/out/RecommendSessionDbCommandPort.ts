@@ -7,6 +7,7 @@ import { StartSessionCommand } from '../in/recommend-session/RecommendSessionUse
 
 export class AddStepCommand {
   sessionId: string;
+  step: number;
   question: string;
   options: string[];
 }
@@ -29,4 +30,5 @@ export interface RecommendSessionDbCommandPort {
   updateAnswer(stepId: number, answer: string): Promise<void>;
   updateSessionOwner(deviceId: string, userId: number): Promise<void>;
   endSession(sessionId: string): Promise<void>;
+  removeProgressedSteps(sessionId: string, step: number): Promise<void>;
 }
