@@ -25,6 +25,12 @@ export class RecommendSessionStepDbEntity {
   @Property({ onCreate: () => new Date() })
   createdAt: Date;
 
+  @Property({ onCreate: () => new Date(), onUpdate: () => new Date() })
+  updatedAt: Date;
+
+  @Property({ nullable: true })
+  deletedAt?: Date;
+
   @ManyToOne(() => RecommendSessionDbEntity)
   session: Rel<RecommendSessionDbEntity>;
 }

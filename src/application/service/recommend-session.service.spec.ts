@@ -16,6 +16,7 @@ import {
 import {
   RecommendSessionAlreadyEndedException,
   RecommendSessionInvalidAnswerException,
+  RecommendSessionInvalidStepException,
   RecommendSessionNotFoundException,
 } from '../common/error/exception/recommend-session.exception';
 import { ProductDbQueryPort } from '../port/in/product/ProductDbQueryPort';
@@ -68,6 +69,7 @@ describe('RecommendSessionService', () => {
             updateAnswer: jest.fn(),
             createResult: jest.fn(),
             endSession: jest.fn(),
+            removeProgressedSteps: jest.fn(),
           },
         },
       ],
@@ -123,6 +125,7 @@ describe('RecommendSessionService', () => {
       expect(commandPortMock.startSession).toHaveBeenCalledWith(command);
       expect(commandPortMock.createStep).toHaveBeenCalledWith({
         sessionId: session.id,
+        step: 1,
         question: `${command.receiverName}${step.question}`,
         options: step.options,
       });
@@ -156,7 +159,11 @@ describe('RecommendSessionService', () => {
       };
       commandPortMock.createStep.mockResolvedValue(nextStep);
 
-      const command: SubmitAnswerCommand = { sessionId: session.id, answer: '옵션1' };
+      const command: SubmitAnswerCommand = {
+        sessionId: session.id,
+        answer: '옵션1',
+        step: lastStep.step,
+      };
 
       // when
       const result = await service.submitAnswer(command);
@@ -168,6 +175,7 @@ describe('RecommendSessionService', () => {
       expect(commandPortMock.updateAnswer).toHaveBeenCalledWith(lastStep.id, command.answer);
       expect(commandPortMock.createStep).toHaveBeenCalledWith({
         sessionId: session.id,
+        step: nextStep.step,
         question: nextStep.question,
         options: nextStep.options,
       });
@@ -193,7 +201,7 @@ describe('RecommendSessionService', () => {
       const lastStep: RecommendSessionBaseStep = {
         id: 4,
         sessionId: session.id,
-        step: 5,
+        step: 4,
         question: '질문',
         options: ['옵션1', '옵션2', '옵션3', '옵션4'],
       };
@@ -208,7 +216,11 @@ describe('RecommendSessionService', () => {
       };
       commandPortMock.createStep.mockResolvedValue(nextStep);
 
-      const command: SubmitAnswerCommand = { sessionId: session.id, answer: '옵션1' };
+      const command: SubmitAnswerCommand = {
+        sessionId: session.id,
+        answer: '옵션1',
+        step: lastStep.step,
+      };
 
       // when
       const result = await service.submitAnswer(command);
@@ -235,6 +247,7 @@ describe('RecommendSessionService', () => {
       expect(commandPortMock.updateAnswer).toHaveBeenCalledWith(lastStep.id, command.answer);
       expect(commandPortMock.createStep).toHaveBeenCalledWith({
         sessionId: session.id,
+        step: nextStep.step,
         question: nextStep.question,
         options: nextStep.options,
       });
@@ -277,7 +290,11 @@ describe('RecommendSessionService', () => {
       };
       commandPortMock.createStep.mockResolvedValue(nextStep);
 
-      const command: SubmitAnswerCommand = { sessionId: session.id, answer: '옵션1' };
+      const command: SubmitAnswerCommand = {
+        sessionId: session.id,
+        answer: '옵션1',
+        step: lastStep.step,
+      };
 
       // when
       const result = await service.submitAnswer(command);
@@ -289,6 +306,7 @@ describe('RecommendSessionService', () => {
       expect(commandPortMock.updateAnswer).toHaveBeenCalledWith(lastStep.id, command.answer);
       expect(commandPortMock.createStep).toHaveBeenCalledWith({
         sessionId: session.id,
+        step: nextStep.step,
         question: nextStep.question,
         options: nextStep.options,
       });
@@ -330,7 +348,11 @@ describe('RecommendSessionService', () => {
       };
       commandPortMock.createStep.mockResolvedValue(nextStep);
 
-      const command: SubmitAnswerCommand = { sessionId: session.id, answer: '옵션1' };
+      const command: SubmitAnswerCommand = {
+        sessionId: session.id,
+        answer: '옵션1',
+        step: lastStep.step,
+      };
 
       // when
       const result = await service.submitAnswer(command);
@@ -350,6 +372,7 @@ describe('RecommendSessionService', () => {
       expect(commandPortMock.createStep).toHaveBeenCalledTimes(1);
       expect(commandPortMock.createStep).toHaveBeenCalledWith({
         sessionId: session.id,
+        step: nextStep.step,
         question: nextStep.question,
         options: nextStep.options,
       });
@@ -398,7 +421,11 @@ describe('RecommendSessionService', () => {
       ];
       commandPortMock.createResult.mockResolvedValue(results);
 
-      const command: SubmitAnswerCommand = { sessionId: session.id, answer: '옵션1' };
+      const command: SubmitAnswerCommand = {
+        sessionId: session.id,
+        answer: '옵션1',
+        step: lastStep.step,
+      };
 
       // when
       const submitResult = await service.submitAnswer(command);
@@ -433,6 +460,74 @@ describe('RecommendSessionService', () => {
       );
     });
 
+    it('이전 단계의 step으로 답변을 제공하면 현재 단계 이후의 단계의 질문/답변을 제거한다', async () => {
+      // given
+      const session = recommendSessionMockData;
+      queryPortMock.getSessionById.mockResolvedValue(session);
+
+      const commonQuestion = commonQuestionMockData;
+      commonQuestionQueryPortMock.getCommonQuestionsByStep.mockResolvedValue([commonQuestion]);
+
+      const lastStep: RecommendSessionBaseStep = {
+        id: 3,
+        sessionId: session.id,
+        step: 3,
+        question: '질문',
+        options: ['옵션1', '옵션2', '옵션3', '옵션4'],
+      };
+      queryPortMock.getLastStep.mockResolvedValueOnce(lastStep);
+      const lastStep2: RecommendSessionBaseStep = {
+        id: 1,
+        sessionId: session.id,
+        step: 1,
+        question: '질문',
+        options: ['옵션1', '옵션2', '옵션3', '옵션4'],
+      };
+      queryPortMock.getLastStep.mockResolvedValueOnce(lastStep2);
+
+      const nextStep: RecommendSessionBaseStep = {
+        id: 2,
+        sessionId: session.id,
+        step: 2,
+        question: `${session.receiverName}${commonQuestion.question}`,
+        options: commonQuestion.options,
+      };
+      commandPortMock.createStep.mockResolvedValue(nextStep);
+
+      const command: SubmitAnswerCommand = {
+        sessionId: session.id,
+        answer: '옵션1',
+        step: 1,
+      };
+
+      // when
+      const result = await service.submitAnswer(command);
+
+      // then
+      expect(result).toEqual({ ...nextStep, type: RecommendSessionStepType.SETUP });
+      expect(queryPortMock.getSessionById).toHaveBeenCalledTimes(1);
+      expect(queryPortMock.getSessionById).toHaveBeenCalledWith(session.id);
+      expect(queryPortMock.getLastStep).toHaveBeenCalledTimes(2);
+      expect(queryPortMock.getLastStep).toHaveBeenCalledWith(session.id);
+      expect(queryPortMock.getLastStep).toHaveBeenCalledWith(session.id);
+      expect(commandPortMock.removeProgressedSteps).toHaveBeenCalledTimes(1);
+      expect(commandPortMock.removeProgressedSteps).toHaveBeenCalledWith(session.id, 1);
+      expect(commandPortMock.updateAnswer).toHaveBeenCalledTimes(1);
+      expect(commandPortMock.updateAnswer).toHaveBeenCalledWith(lastStep2.id, command.answer);
+      expect(commandPortMock.createStep).toHaveBeenCalledTimes(1);
+      expect(commandPortMock.createStep).toHaveBeenCalledWith({
+        sessionId: session.id,
+        step: nextStep.step,
+        question: nextStep.question,
+        options: nextStep.options,
+      });
+      expect(commandPortMock.endSession).not.toHaveBeenCalled();
+      expect(commandPortMock.createResult).not.toHaveBeenCalled();
+      expect(openAiClientMock.generateQuestion).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getProducts).not.toHaveBeenCalled();
+      expect(openAiClientMock.recommendGift).not.toHaveBeenCalled();
+    });
+
     it('유효하지 않은 답변을 제출하면 예외가 발생한다', async () => {
       // given
       const sessionId = 'session-id';
@@ -449,8 +544,39 @@ describe('RecommendSessionService', () => {
       queryPortMock.getLastStep.mockResolvedValue(lastStep);
 
       // when & then
-      await expect(service.submitAnswer({ sessionId, answer: '옵션5' })).rejects.toThrow(
-        new RecommendSessionInvalidAnswerException(),
+      await expect(
+        service.submitAnswer({ sessionId, answer: '옵션5', step: lastStep.step }),
+      ).rejects.toThrow(new RecommendSessionInvalidAnswerException());
+      expect(queryPortMock.getSessionById).toHaveBeenCalledTimes(1);
+      expect(queryPortMock.getSessionById).toHaveBeenCalledWith(sessionId);
+      expect(queryPortMock.getLastStep).toHaveBeenCalledTimes(1);
+      expect(queryPortMock.getLastStep).toHaveBeenCalledWith(sessionId);
+      expect(commandPortMock.updateAnswer).not.toHaveBeenCalled();
+      expect(commandPortMock.endSession).not.toHaveBeenCalled();
+      expect(commandPortMock.createResult).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getProducts).not.toHaveBeenCalled();
+      expect(openAiClientMock.recommendGift).not.toHaveBeenCalled();
+      expect(openAiClientMock.generateQuestion).not.toHaveBeenCalled();
+    });
+
+    it('진행되지 않은 단계에 답변을 제출하면 예외가 발생한다', async () => {
+      // given
+      const sessionId = 'session-id';
+      const session = recommendSessionMockData;
+      queryPortMock.getSessionById.mockResolvedValue(session);
+
+      const lastStep: RecommendSessionBaseStep = {
+        id: 1,
+        sessionId,
+        step: 1,
+        question: '질문',
+        options: ['옵션1', '옵션2', '옵션3', '옵션4'],
+      };
+      queryPortMock.getLastStep.mockResolvedValue(lastStep);
+
+      // when & then
+      await expect(service.submitAnswer({ sessionId, answer: '옵션5', step: 2 })).rejects.toThrow(
+        new RecommendSessionInvalidStepException(),
       );
       expect(queryPortMock.getSessionById).toHaveBeenCalledTimes(1);
       expect(queryPortMock.getSessionById).toHaveBeenCalledWith(sessionId);
@@ -470,7 +596,7 @@ describe('RecommendSessionService', () => {
       queryPortMock.getSessionById.mockRejectedValue(new RecommendSessionNotFoundException());
 
       // when & then
-      await expect(service.submitAnswer({ sessionId, answer: '옵션1' })).rejects.toThrow(
+      await expect(service.submitAnswer({ sessionId, answer: '옵션1', step: 1 })).rejects.toThrow(
         new RecommendSessionNotFoundException(),
       );
       expect(queryPortMock.getSessionById).toHaveBeenCalledTimes(1);
@@ -495,7 +621,7 @@ describe('RecommendSessionService', () => {
       queryPortMock.getSessionById.mockResolvedValue(session);
 
       // when & then
-      await expect(service.submitAnswer({ sessionId, answer: '옵션1' })).rejects.toThrow(
+      await expect(service.submitAnswer({ sessionId, answer: '옵션1', step: 1 })).rejects.toThrow(
         new RecommendSessionAlreadyEndedException(),
       );
       expect(queryPortMock.getSessionById).toHaveBeenCalledTimes(1);

@@ -1,4 +1,4 @@
-import { IsString } from 'class-validator';
+import { IsInt, IsString, Min } from 'class-validator';
 
 import { SwaggerDto } from '../../../../common/decorators/swagger-dto.decorator';
 import {
@@ -21,6 +21,10 @@ export class StartSessionCommand extends StartSessionRequest {
 
 @SwaggerDto()
 export class SubmitAnswerRequest {
+  @Min(1)
+  @IsInt()
+  step: number;
+
   @IsString()
   answer: string;
 }
