@@ -34,6 +34,8 @@ export class RecommendSessionGateway
     private readonly sessionRepository: EntityRepository<RecommendSessionDbEntity>,
     @InjectRepository(RecommendSessionStepDbEntity)
     private readonly stepRepository: EntityRepository<RecommendSessionStepDbEntity>,
+    @InjectRepository(RecommendSessionResultDbEntity)
+    private readonly resultRepository: EntityRepository<RecommendSessionResultDbEntity>,
     @Inject(EntityManager)
     private readonly em: EntityManager,
   ) {}
@@ -47,6 +49,26 @@ export class RecommendSessionGateway
       throw new NotFoundException();
     }
     return mapToRecommendSession(session);
+  }
+
+  async getSessionResultsById(sessionId: string): Promise<RecommendSessionResult[]> {
+    const results = await this.resultRepository.find(
+      { session: { id: sessionId } },
+      { populate: ['product'] },
+    );
+    return results.map(mapToRecommendSessionResult);
+  }
+
+  async getSessionResultById(sessionId: string, order: number): Promise<RecommendSessionResult> {
+    const result = await this.resultRepository.findOne(
+      { session: { id: sessionId }, order },
+      { populate: ['product'] },
+    );
+    if (!result) {
+      throw new NotFoundException();
+    }
+
+    return mapToRecommendSessionResult(result);
   }
 
   async getLastStep(sessionId: string): Promise<RecommendSessionBaseStep> {
