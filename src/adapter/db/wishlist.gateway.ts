@@ -26,7 +26,7 @@ export class WishlistGateway implements WishlistDbCommandPort, WishlistDbQueryPo
     private readonly em: EntityManager,
   ) {}
 
-  async addToWishlist(command: AddWishlistCommand): Promise<void> {
+  async addWishlist(command: AddWishlistCommand): Promise<void> {
     const entity = this.wishlistRepository.create({
       userId: command.userId,
       productId: command.productId,

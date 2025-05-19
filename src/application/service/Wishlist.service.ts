@@ -14,15 +14,15 @@ export class WishlistService implements WishlistUseCase {
     private readonly wishlistDbCommandPort: WishlistDbCommandPort,
   ) {}
 
+  async getGroupedByReceiver(userId: number): Promise<WishlistGroupedByReceiver[]> {
+    return await this.wishlistDbQueryPort.getGroupedByReceiver(userId);
+  }
+
   async addToWishlist(command: AddWishlistCommand): Promise<void> {
-    await this.wishlistDbCommandPort.addToWishlist(command);
+    await this.wishlistDbCommandPort.addWishlist(command);
   }
 
   async removeFromWishlist(wishlistId: number, userId: number): Promise<void> {
     await this.wishlistDbCommandPort.removeWishlist(wishlistId, userId);
-  }
-
-  async getGroupedByReceiver(userId: number): Promise<WishlistGroupedByReceiver[]> {
-    return await this.wishlistDbQueryPort.getGroupedByReceiver(userId);
   }
 }

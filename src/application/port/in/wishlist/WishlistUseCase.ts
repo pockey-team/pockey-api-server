@@ -3,7 +3,7 @@ import { SwaggerDto } from 'src/common/decorators/swagger-dto.decorator';
 import { WishlistGroupedByReceiver } from 'src/domain/wishlist';
 
 @SwaggerDto()
-export class AddToWishlistRequest {
+export class AddWishlistRequest {
   @IsNumber()
   productId: number;
 
@@ -11,14 +11,12 @@ export class AddToWishlistRequest {
   receiverName: string;
 }
 
-export interface AddWishlistCommand {
+export interface AddWishlistCommand extends AddWishlistRequest {
   userId: number;
-  productId: number;
-  receiverName: string;
 }
 
 export interface WishlistUseCase {
+  getGroupedByReceiver(userId: number): Promise<WishlistGroupedByReceiver[]>;
   addToWishlist(command: AddWishlistCommand): Promise<void>;
   removeFromWishlist(wishlistId: number, userId: number): Promise<void>;
-  getGroupedByReceiver(userId: number): Promise<WishlistGroupedByReceiver[]>;
 }
