@@ -282,6 +282,16 @@ export class RecommendSessionService implements RecommendSessionUseCase {
     });
     await this.sessionDbCommandPort.endSession(sessionId);
 
-    return result;
+    return Promise.all(
+      result.map(async item => ({
+        ...item,
+        product: {
+          ...item.product,
+          nextPickProducts: await this.productDbQueryPort.getNextPicsProducts(
+            item.product.nextPickProductIds,
+          ),
+        },
+      })),
+    );
   }
 }

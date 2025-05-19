@@ -1,5 +1,5 @@
 import { ProductDbEntity } from './product.entity';
-import { Product } from '../../domain/product';
+import { NextPickProduct, Product } from '../../domain/product';
 
 export const mapToProduct = (dbEntity: ProductDbEntity): Product => {
   return {
@@ -18,5 +18,15 @@ export const mapToProduct = (dbEntity: ProductDbEntity): Product => {
     targetGender: dbEntity.targetGender,
     tags: dbEntity.tags,
     nextPickProductIds: dbEntity.nextPickProductIds,
+    nextPickProducts: [],
+  };
+};
+
+export const mapToNextPickProduct = (dbEntity: ProductDbEntity): NextPickProduct => {
+  return {
+    id: dbEntity.id,
+    name: dbEntity.name,
+    url: dbEntity.url,
+    imageUrl: dbEntity.imageUrl,
   };
 };

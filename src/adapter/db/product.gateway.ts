@@ -3,11 +3,11 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable } from '@nestjs/common';
 
 import { ProductDbEntity } from './product.entity';
-import { mapToProduct } from './product.mapper';
+import { mapToNextPickProduct, mapToProduct } from './product.mapper';
 import { ProductNotFoundException } from '../../application/common/error/exception/product.exception';
 import { ProductDbQueryPort } from '../../application/port/in/product/ProductDbQueryPort';
 import { GetProductsQuery } from '../../application/port/in/product/ProductUseCase';
-import { Product } from '../../domain/product';
+import { NextPickProduct, Product } from '../../domain/product';
 
 @Injectable()
 export class ProductGateway implements ProductDbQueryPort {
@@ -38,5 +38,10 @@ export class ProductGateway implements ProductDbQueryPort {
 
     const products = await qb.getResult();
     return products.map(mapToProduct);
+  }
+
+  async getNextPicsProducts(ids: number[]): Promise<NextPickProduct[]> {
+    const products = await this.productRepository.find({ id: { $in: ids } });
+    return products.map(mapToNextPickProduct);
   }
 }

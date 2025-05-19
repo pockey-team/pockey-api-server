@@ -14,4 +14,12 @@ export class Product {
   targetGender: string;
   tags: string[];
   nextPickProductIds: number[];
+  nextPickProducts: NextPickProduct[];
+}
+
+export class NextPickProduct {
+  id: number;
+  name: string;
+  url: string;
+  imageUrl: string;
 }
