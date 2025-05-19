@@ -23,3 +23,9 @@ export class NextPickProduct {
   url: string;
   imageUrl: string;
 }
+
+export class WishlistProduct {
+  id: number;
+  name: string;
+  imageUrl: string;
+}

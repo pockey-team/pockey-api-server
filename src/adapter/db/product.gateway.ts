@@ -3,11 +3,13 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable } from '@nestjs/common';
 
 import { ProductDbEntity } from './product.entity';
-import { mapToNextPickProduct, mapToProduct } from './product.mapper';
+import { mapToProduct, mapToWishlistProduct } from './product.mapper';
+import { mapToNextPickProduct } from './product.mapper';
 import { ProductNotFoundException } from '../../application/common/error/exception/product.exception';
 import { ProductDbQueryPort } from '../../application/port/in/product/ProductDbQueryPort';
 import { GetProductsQuery } from '../../application/port/in/product/ProductUseCase';
-import { NextPickProduct, Product } from '../../domain/product';
+import { Product, WishlistProduct } from '../../domain/product';
+import { NextPickProduct } from '../../domain/product';
 
 @Injectable()
 export class ProductGateway implements ProductDbQueryPort {
@@ -48,5 +50,14 @@ export class ProductGateway implements ProductDbQueryPort {
   async getNextPicsProducts(ids: number[]): Promise<NextPickProduct[]> {
     const products = await this.productRepository.find({ id: { $in: ids } });
     return products.map(mapToNextPickProduct);
+  }
+
+  async getWishlistProductsByIds(ids: number[]): Promise<WishlistProduct[]> {
+    const entities = await this.productRepository.find({
+      id: { $in: ids },
+      deletedAt: null,
+    });
+
+    return entities.map(mapToWishlistProduct);
   }
 }

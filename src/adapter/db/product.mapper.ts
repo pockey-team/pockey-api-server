@@ -30,3 +30,11 @@ export const mapToNextPickProduct = (dbEntity: ProductDbEntity): NextPickProduct
     imageUrl: dbEntity.imageUrl,
   };
 };
+
+export const mapToWishlistProduct = (dbEntity: ProductDbEntity): WishlistProduct => {
+  return {
+    id: dbEntity.id,
+    name: dbEntity.name,
+    imageUrl: dbEntity.imageUrl,
+  };
+};
