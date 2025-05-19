@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { WishlistService } from './Wishlist.service';
 import {
   createWishlistMock,
+  domainWishlistMock,
   wishlistGroupedMock,
   wishlistGroupedWithDeletedMock,
 } from '../../__mock__/wishlist.mock';
@@ -25,8 +26,9 @@ describe('WishlistService', () => {
         {
           provide: 'WishlistGateway',
           useValue: {
-            addToWishlist: jest.fn(),
+            addWishlist: jest.fn(),
             removeWishlist: jest.fn(),
+            getWishlistById: jest.fn(),
             getGroupedByReceiver: jest.fn(),
           },
         },
@@ -58,14 +60,13 @@ describe('WishlistService', () => {
   describe('removeFromWishlist', () => {
     it('자신의 위시리스트에서 상품을 삭제할 수 있다', async () => {
       //given
-      const wishlistId = 1;
-      const userId = 1;
+      queryPortMock.getWishlistById.mockResolvedValue(domainWishlistMock);
 
       //when
-      await service.removeFromWishlist(wishlistId, userId);
+      await service.removeFromWishlist(domainWishlistMock.id, domainWishlistMock.userId);
 
       //then
-      expect(commandPortMock.removeWishlist).toHaveBeenCalledWith(wishlistId, userId);
+      expect(commandPortMock.removeWishlist).toHaveBeenCalledWith(domainWishlistMock.id);
     });
     it('존재하지 않는 위시리스트 ID일 경우 예외를 던진다', async () => {
       // given
@@ -82,14 +83,10 @@ describe('WishlistService', () => {
     });
     it('다른 사용자의 위시리스트일 경우 예외를 던진다', async () => {
       // given
-      const wishlistId = 1;
-      const userId = 999;
-      commandPortMock.removeWishlist.mockImplementation(() => {
-        throw new ForbiddenWishlistAccessException();
-      });
+      queryPortMock.getWishlistById.mockResolvedValue({ ...domainWishlistMock, userId: 999 });
 
       // then
-      await expect(service.removeFromWishlist(wishlistId, userId)).rejects.toThrow(
+      await expect(service.removeFromWishlist(domainWishlistMock.id, 1)).rejects.toThrow(
         ForbiddenWishlistAccessException,
       );
     });

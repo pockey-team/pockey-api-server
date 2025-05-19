@@ -2,14 +2,11 @@ import { EntityManager } from '@mikro-orm/core';
 import { EntityRepository } from '@mikro-orm/mysql';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Inject, Injectable } from '@nestjs/common';
-import {
-  ForbiddenWishlistAccessException,
-  WishlistNotFoundException,
-} from 'src/application/common/error/exception/wishlist.exception';
+import { WishlistNotFoundException } from 'src/application/common/error/exception/wishlist.exception';
 import { AddWishlistCommand } from 'src/application/port/in/wishlist/WishlistUseCase';
 import { WishlistDbCommandPort } from 'src/application/port/out/WishlistDbCommandPort';
 import { WishlistDbQueryPort } from 'src/application/port/out/WishlistDbQueryPort';
-import { WishlistGroupedByReceiver, WishlistItem } from 'src/domain/wishlist';
+import { Wishlist, WishlistGroupedByReceiver, WishlistItem } from 'src/domain/wishlist';
 
 import { ProductDbEntity } from './product.entity';
 import { WishlistDbEntity } from './wishlist.entity';
@@ -26,6 +23,16 @@ export class WishlistGateway implements WishlistDbCommandPort, WishlistDbQueryPo
     private readonly em: EntityManager,
   ) {}
 
+  async getWishlistById(wishlistId: number): Promise<Wishlist> {
+    const wishlist = await this.wishlistRepository.findOne({ id: wishlistId });
+
+    if (!wishlist) {
+      throw new WishlistNotFoundException();
+    }
+
+    return mapToWishlist(wishlist);
+  }
+
   async addWishlist(command: AddWishlistCommand): Promise<void> {
     const entity = this.wishlistRepository.create({
       userId: command.userId,
@@ -36,17 +43,10 @@ export class WishlistGateway implements WishlistDbCommandPort, WishlistDbQueryPo
     await this.em.persistAndFlush(entity);
   }
 
-  async removeWishlist(wishlistId: number, userId: number): Promise<void> {
+  async removeWishlist(wishlistId: number): Promise<void> {
     const wishlist = await this.wishlistRepository.findOne({ id: wishlistId });
 
-    if (!wishlist) {
-      throw new WishlistNotFoundException();
-    }
-
-    if (wishlist.userId !== userId) {
-      throw new ForbiddenWishlistAccessException();
-    }
-    await this.em.removeAndFlush(wishlist);
+    await this.em.removeAndFlush(wishlist!);
   }
 
   async getGroupedByReceiver(userId: number): Promise<WishlistGroupedByReceiver[]> {
