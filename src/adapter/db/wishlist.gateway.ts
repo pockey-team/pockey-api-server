@@ -6,9 +6,8 @@ import { WishlistNotFoundException } from 'src/application/common/error/exceptio
 import { AddWishlistCommand } from 'src/application/port/in/wishlist/WishlistUseCase';
 import { WishlistDbCommandPort } from 'src/application/port/out/WishlistDbCommandPort';
 import { WishlistDbQueryPort } from 'src/application/port/out/WishlistDbQueryPort';
-import { Wishlist, WishlistGroupedByReceiver, WishlistItem } from 'src/domain/wishlist';
+import { Wishlist } from 'src/domain/wishlist';
 
-import { ProductDbEntity } from './product.entity';
 import { WishlistDbEntity } from './wishlist.entity';
 import { mapToWishlist } from './wishlist.mapper';
 
@@ -17,8 +16,6 @@ export class WishlistGateway implements WishlistDbCommandPort, WishlistDbQueryPo
   constructor(
     @InjectRepository(WishlistDbEntity)
     private readonly wishlistRepository: EntityRepository<WishlistDbEntity>,
-    @InjectRepository(ProductDbEntity)
-    private readonly productRepository: EntityRepository<ProductDbEntity>,
     @Inject(EntityManager)
     private readonly em: EntityManager,
   ) {}
@@ -31,6 +28,14 @@ export class WishlistGateway implements WishlistDbCommandPort, WishlistDbQueryPo
     }
 
     return mapToWishlist(wishlist);
+  }
+
+  async getAllByUserId(userId: number): Promise<Wishlist[]> {
+    const entities = await this.wishlistRepository.find(
+      { userId },
+      { orderBy: { createdAt: 'desc' } },
+    );
+    return entities.map(mapToWishlist);
   }
 
   async addWishlist(command: AddWishlistCommand): Promise<void> {
@@ -47,46 +52,5 @@ export class WishlistGateway implements WishlistDbCommandPort, WishlistDbQueryPo
     const wishlist = await this.wishlistRepository.findOne({ id: wishlistId });
 
     await this.em.removeAndFlush(wishlist!);
-  }
-
-  async getGroupedByReceiver(userId: number): Promise<WishlistGroupedByReceiver[]> {
-    const entities: WishlistDbEntity[] = await this.wishlistRepository.find(
-      { userId },
-      { orderBy: { createdAt: 'desc' } },
-    );
-    const wishlists = entities.map(mapToWishlist);
-
-    const productIds = wishlists.map(w => w.productId);
-
-    const products = await this.productRepository.find({
-      id: { $in: productIds },
-      deletedAt: null,
-    });
-
-    const productMap = new Map<number, ProductDbEntity>(products.map(p => [p.id, p]));
-
-    const grouped = new Map<string, WishlistItem[]>();
-
-    for (const item of wishlists) {
-      const product = productMap.get(item.productId);
-
-      const dto: WishlistItem = {
-        wishlistId: item.id,
-        productId: item.productId,
-        name: product ? product.name : null,
-        imageUrl: product ? product.imageUrl : null,
-        deleted: !product,
-        createdAt: item.createdAt,
-      };
-
-      if (!grouped.has(item.receiverName)) {
-        grouped.set(item.receiverName, []);
-      }
-      grouped.get(item.receiverName)!.push(dto);
-    }
-    return Array.from(grouped.entries()).map(([receiverName, items]) => ({
-      receiverName,
-      items,
-    }));
   }
 }

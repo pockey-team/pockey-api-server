@@ -15,3 +15,9 @@ export class Product {
   tags: string[];
   nextPickProductIds: number[];
 }
+
+export class WishlistProduct {
+  id: number;
+  name: string;
+  imageUrl: string;
+}
