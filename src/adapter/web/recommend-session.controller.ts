@@ -1,4 +1,4 @@
-import { Controller, Inject, Post, Delete, Param, Body } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Inject, Param, Post } from '@nestjs/common';
 
 import {
   RecommendSessionUseCase,
@@ -12,6 +12,19 @@ export class RecommendSessionController {
     @Inject('RecommendSessionUseCase')
     private readonly recommendSessionUseCase: RecommendSessionUseCase,
   ) {}
+
+  @Get(':sessionId/result')
+  async getRecommendSessionResults(@Param('sessionId') sessionId: string) {
+    return this.recommendSessionUseCase.getRecommendSessionResults(sessionId);
+  }
+
+  @Get(':sessionId/result/:order')
+  async getRecommendSessionResultOne(
+    @Param('sessionId') sessionId: string,
+    @Param('order') order: number,
+  ) {
+    return this.recommendSessionUseCase.getRecommendSessionResult(sessionId, order);
+  }
 
   @Post()
   async startSession(@Body() command: StartSessionRequest) {

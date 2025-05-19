@@ -2,6 +2,7 @@ import { IsInt, IsString, Min } from 'class-validator';
 
 import { SwaggerDto } from '../../../../common/decorators/swagger-dto.decorator';
 import {
+  RecommendSessionResult,
   RecommendSessionStep,
   RecommendSessionStepResponse,
 } from '../../../../domain/recommend-session';
@@ -34,6 +35,8 @@ export class SubmitAnswerCommand extends SubmitAnswerRequest {
 }
 
 export interface RecommendSessionUseCase {
+  getRecommendSessionResults(sessionId: string): Promise<RecommendSessionResult[]>;
+  getRecommendSessionResult(sessionId: string, order: number): Promise<RecommendSessionResult>;
   startSession(command: StartSessionCommand): Promise<RecommendSessionStep>;
   submitAnswer(command: SubmitAnswerCommand): Promise<RecommendSessionStepResponse>;
   endSession(sessionId: string): Promise<void>;

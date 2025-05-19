@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import {
   RecommendSessionDbEntity,
+  RecommendSessionResultDbEntity,
   RecommendSessionStepDbEntity,
   UserDbEntity,
 } from 'src/adapter/db';
@@ -20,6 +21,7 @@ import { JwtStrategy } from '../auth/strategy';
       UserDbEntity,
       RecommendSessionDbEntity,
       RecommendSessionStepDbEntity,
+      RecommendSessionResultDbEntity,
     ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],

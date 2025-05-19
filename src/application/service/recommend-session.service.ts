@@ -65,6 +65,17 @@ export class RecommendSessionService implements RecommendSessionUseCase {
     private readonly openAiClient: OpenAiClient,
   ) {}
 
+  async getRecommendSessionResults(sessionId: string): Promise<RecommendSessionResult[]> {
+    return this.sessionDbQueryPort.getSessionResultsById(sessionId);
+  }
+
+  async getRecommendSessionResult(
+    sessionId: string,
+    order: number,
+  ): Promise<RecommendSessionResult> {
+    return this.sessionDbQueryPort.getSessionResultById(sessionId, order);
+  }
+
   async startSession(command: StartSessionCommand): Promise<RecommendSessionFirstStep> {
     const session = await this.sessionDbCommandPort.startSession(command);
 
