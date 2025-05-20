@@ -113,16 +113,16 @@ export class RecommendSessionService implements RecommendSessionUseCase {
       throw new RecommendSessionInvalidStepException();
     }
 
+    if (!lastStep.options.some(option => option === command.answer)) {
+      throw new RecommendSessionInvalidAnswerException();
+    }
+
     const isUnderStep = command.step < lastStep.step;
     const isSameAndAlreadyAnswered = command.step === lastStep.step && lastStep.answer;
 
     if (isUnderStep || isSameAndAlreadyAnswered) {
       await this.sessionDbCommandPort.removeProgressedSteps(command.sessionId, command.step);
       lastStep = await this.sessionDbQueryPort.getLastStep(command.sessionId);
-    }
-
-    if (!lastStep.options.some(option => option === command.answer)) {
-      throw new RecommendSessionInvalidAnswerException();
     }
 
     await this.sessionDbCommandPort.updateAnswer(lastStep.id, command.answer);
@@ -266,7 +266,7 @@ export class RecommendSessionService implements RecommendSessionUseCase {
       throw new RecommendSessionInvalidAnswerException();
     }
 
-    const recommendProducts = await this.productDbQueryPort.getProducts({
+    let recommendProducts = await this.productDbQueryPort.getProducts({
       targetGender: [step1Answer, '성별 무관'],
       ageRange: step2Answer,
       priceRange: step4Answer,
@@ -274,6 +274,11 @@ export class RecommendSessionService implements RecommendSessionUseCase {
     });
     if (recommendProducts.length === 0) {
       throw new RecommendProductNotFoundException();
+    }
+
+    if (recommendProducts.length < 3) {
+      const universalProducts = await this.productDbQueryPort.getUniversalProducts();
+      recommendProducts = [...recommendProducts, ...universalProducts];
     }
 
     const llmAnswer = await retry(

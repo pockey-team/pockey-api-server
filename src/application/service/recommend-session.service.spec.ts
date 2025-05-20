@@ -57,6 +57,8 @@ describe('RecommendSessionService', () => {
           provide: 'ProductGateway',
           useValue: {
             getProducts: jest.fn(),
+            getUniversalProducts: jest.fn(),
+            getNextPicsProducts: jest.fn(),
           },
         },
         {
@@ -183,6 +185,8 @@ describe('RecommendSessionService', () => {
       expect(commandPortMock.createResult).not.toHaveBeenCalled();
       expect(openAiClientMock.generateQuestion).not.toHaveBeenCalled();
       expect(productDbQueryPortMock.getProducts).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getUniversalProducts).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getNextPicsProducts).not.toHaveBeenCalled();
       expect(openAiClientMock.recommendGift).not.toHaveBeenCalled();
     });
 
@@ -255,6 +259,8 @@ describe('RecommendSessionService', () => {
       expect(commandPortMock.createResult).not.toHaveBeenCalled();
       expect(openAiClientMock.generateQuestion).not.toHaveBeenCalled();
       expect(productDbQueryPortMock.getProducts).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getUniversalProducts).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getNextPicsProducts).not.toHaveBeenCalled();
       expect(openAiClientMock.recommendGift).not.toHaveBeenCalled();
     });
 
@@ -314,6 +320,8 @@ describe('RecommendSessionService', () => {
       expect(commandPortMock.createResult).not.toHaveBeenCalled();
       expect(openAiClientMock.generateQuestion).not.toHaveBeenCalled();
       expect(productDbQueryPortMock.getProducts).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getUniversalProducts).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getNextPicsProducts).not.toHaveBeenCalled();
       expect(openAiClientMock.recommendGift).not.toHaveBeenCalled();
     });
 
@@ -379,6 +387,8 @@ describe('RecommendSessionService', () => {
       expect(commandPortMock.endSession).not.toHaveBeenCalled();
       expect(commandPortMock.createResult).not.toHaveBeenCalled();
       expect(productDbQueryPortMock.getProducts).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getUniversalProducts).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getNextPicsProducts).not.toHaveBeenCalled();
       expect(openAiClientMock.recommendGift).not.toHaveBeenCalled();
     });
 
@@ -396,8 +406,117 @@ describe('RecommendSessionService', () => {
         ],
       });
 
-      productDbQueryPortMock.getProducts.mockResolvedValue([productMockData]);
+      productDbQueryPortMock.getProducts.mockResolvedValue([
+        productMockData,
+        productMockData,
+        productMockData,
+      ]);
 
+      openAiClientMock.recommendGift.mockResolvedValue([
+        { id: productMockData.id, reason: '추천 이유 1', order: 1 },
+        { id: productMockData.id, reason: '추천 이유 2', order: 2 },
+        { id: productMockData.id, reason: '추천 이유 3', order: 3 },
+      ]);
+
+      const lastStep: RecommendSessionBaseStep = {
+        id: 9,
+        sessionId,
+        step: 9,
+        question: '질문',
+        options: ['옵션1', '옵션2', '옵션3', '옵션4'],
+      };
+      queryPortMock.getLastStep.mockResolvedValue(lastStep);
+
+      const results = [
+        {
+          product: productMockData,
+          reason: '추천 이유 1',
+          minifiedReason: '추천 이유 1',
+          order: 1,
+        },
+        {
+          product: productMockData,
+          reason: '추천 이유 2',
+          minifiedReason: '추천 이유 2',
+          order: 2,
+        },
+        {
+          product: productMockData,
+          reason: '추천 이유 3',
+          minifiedReason: '추천 이유 3',
+          order: 3,
+        },
+      ];
+      commandPortMock.createResult.mockResolvedValue(results);
+
+      const command: SubmitAnswerCommand = {
+        sessionId: session.id,
+        answer: '옵션1',
+        step: lastStep.step,
+      };
+
+      // when
+      const submitResult = await service.submitAnswer(command);
+
+      // then
+      expect(submitResult).toEqual(results);
+      expect(queryPortMock.getSessionById).toHaveBeenCalledTimes(2);
+      expect(queryPortMock.getSessionById).toHaveBeenCalledWith(session.id);
+      expect(queryPortMock.getLastStep).toHaveBeenCalledTimes(1);
+      expect(queryPortMock.getLastStep).toHaveBeenCalledWith(session.id);
+      expect(commandPortMock.updateAnswer).toHaveBeenCalledTimes(1);
+      expect(commandPortMock.updateAnswer).toHaveBeenCalledWith(lastStep.id, command.answer);
+      expect(commandPortMock.endSession).toHaveBeenCalledTimes(1);
+      expect(commandPortMock.endSession).toHaveBeenCalledWith(session.id);
+      expect(commandPortMock.createResult).toHaveBeenCalledTimes(1);
+      expect(commandPortMock.createResult).toHaveBeenCalledWith({
+        sessionId: session.id,
+        recommendResults: [
+          { productId: productMockData.id, reason: '추천 이유 1', order: 1 },
+          { productId: productMockData.id, reason: '추천 이유 2', order: 2 },
+          { productId: productMockData.id, reason: '추천 이유 3', order: 3 },
+        ],
+      });
+      expect(commandPortMock.createStep).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getProducts).toHaveBeenCalledTimes(1);
+      expect(productDbQueryPortMock.getProducts).toHaveBeenCalledWith({
+        ageRange: '답변 2',
+        friendshipLevel: '답변 3',
+        priceRange: '답변 4',
+        targetGender: ['답변 1', '성별 무관'],
+      });
+      expect(productDbQueryPortMock.getUniversalProducts).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getNextPicsProducts).toHaveBeenCalledTimes(3);
+      expect(productDbQueryPortMock.getNextPicsProducts).toHaveBeenCalledWith([2, 3, 4]);
+      expect(productDbQueryPortMock.getNextPicsProducts).toHaveBeenCalledWith([2, 3, 4]);
+      expect(productDbQueryPortMock.getNextPicsProducts).toHaveBeenCalledWith([2, 3, 4]);
+      expect(openAiClientMock.recommendGift).toHaveBeenCalledTimes(1);
+      expect(openAiClientMock.recommendGift).toHaveBeenCalledWith(
+        '질문:질문/선택지:옵션1,옵션2,옵션3,옵션4/답변:답변 1\n질문:질문/선택지:옵션1,옵션2,옵션3,옵션4/답변:답변 2\n질문:질문/선택지:옵션1,옵션2,옵션3,옵션4/답변:답변 3\n질문:질문/선택지:옵션1,옵션2,옵션3,옵션4/답변:답변 4',
+        [productMockData, productMockData, productMockData],
+      );
+    });
+
+    it('추천 결과의 개수가 충분하지 않으면 유니버셜 상품을 포함하여 추천 결과를 반환한다', async () => {
+      // given
+      const sessionId = 'session-id';
+      const session = recommendSessionMockData;
+      queryPortMock.getSessionById.mockResolvedValue({
+        ...session,
+        steps: [
+          { ...recommendSessionStepMockData, answer: '답변 1' },
+          { ...recommendSessionStepMockData, answer: '답변 2' },
+          { ...recommendSessionStepMockData, answer: '답변 3' },
+          { ...recommendSessionStepMockData, answer: '답변 4' },
+        ],
+      });
+
+      productDbQueryPortMock.getProducts.mockResolvedValue([productMockData]);
+      productDbQueryPortMock.getUniversalProducts.mockResolvedValue([
+        productMockData,
+        productMockData,
+        productMockData,
+      ]);
       openAiClientMock.recommendGift.mockResolvedValue([
         { id: productMockData.id, reason: '추천 이유 1', order: 1 },
       ]);
@@ -453,10 +572,14 @@ describe('RecommendSessionService', () => {
         priceRange: '답변 4',
         targetGender: ['답변 1', '성별 무관'],
       });
+      expect(productDbQueryPortMock.getUniversalProducts).toHaveBeenCalledTimes(1);
+      expect(productDbQueryPortMock.getUniversalProducts).toHaveBeenCalledWith();
+      expect(productDbQueryPortMock.getNextPicsProducts).toHaveBeenCalledTimes(1);
+      expect(productDbQueryPortMock.getNextPicsProducts).toHaveBeenCalledWith([2, 3, 4]);
       expect(openAiClientMock.recommendGift).toHaveBeenCalledTimes(1);
       expect(openAiClientMock.recommendGift).toHaveBeenCalledWith(
         '질문:질문/선택지:옵션1,옵션2,옵션3,옵션4/답변:답변 1\n질문:질문/선택지:옵션1,옵션2,옵션3,옵션4/답변:답변 2\n질문:질문/선택지:옵션1,옵션2,옵션3,옵션4/답변:답변 3\n질문:질문/선택지:옵션1,옵션2,옵션3,옵션4/답변:답변 4',
-        [productMockData],
+        [productMockData, productMockData, productMockData, productMockData],
       );
     });
 
@@ -525,6 +648,8 @@ describe('RecommendSessionService', () => {
       expect(commandPortMock.createResult).not.toHaveBeenCalled();
       expect(openAiClientMock.generateQuestion).not.toHaveBeenCalled();
       expect(productDbQueryPortMock.getProducts).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getUniversalProducts).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getNextPicsProducts).not.toHaveBeenCalled();
       expect(openAiClientMock.recommendGift).not.toHaveBeenCalled();
     });
 
@@ -555,6 +680,8 @@ describe('RecommendSessionService', () => {
       expect(commandPortMock.endSession).not.toHaveBeenCalled();
       expect(commandPortMock.createResult).not.toHaveBeenCalled();
       expect(productDbQueryPortMock.getProducts).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getUniversalProducts).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getNextPicsProducts).not.toHaveBeenCalled();
       expect(openAiClientMock.recommendGift).not.toHaveBeenCalled();
       expect(openAiClientMock.generateQuestion).not.toHaveBeenCalled();
     });
@@ -586,6 +713,8 @@ describe('RecommendSessionService', () => {
       expect(commandPortMock.endSession).not.toHaveBeenCalled();
       expect(commandPortMock.createResult).not.toHaveBeenCalled();
       expect(productDbQueryPortMock.getProducts).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getUniversalProducts).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getNextPicsProducts).not.toHaveBeenCalled();
       expect(openAiClientMock.recommendGift).not.toHaveBeenCalled();
       expect(openAiClientMock.generateQuestion).not.toHaveBeenCalled();
     });
@@ -605,6 +734,8 @@ describe('RecommendSessionService', () => {
       expect(commandPortMock.endSession).not.toHaveBeenCalled();
       expect(commandPortMock.createResult).not.toHaveBeenCalled();
       expect(productDbQueryPortMock.getProducts).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getUniversalProducts).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getNextPicsProducts).not.toHaveBeenCalled();
       expect(openAiClientMock.recommendGift).not.toHaveBeenCalled();
       expect(openAiClientMock.generateQuestion).not.toHaveBeenCalled();
     });
@@ -631,6 +762,8 @@ describe('RecommendSessionService', () => {
       expect(commandPortMock.endSession).not.toHaveBeenCalled();
       expect(commandPortMock.createResult).not.toHaveBeenCalled();
       expect(productDbQueryPortMock.getProducts).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getUniversalProducts).not.toHaveBeenCalled();
+      expect(productDbQueryPortMock.getNextPicsProducts).not.toHaveBeenCalled();
       expect(openAiClientMock.recommendGift).not.toHaveBeenCalled();
       expect(openAiClientMock.generateQuestion).not.toHaveBeenCalled();
     });

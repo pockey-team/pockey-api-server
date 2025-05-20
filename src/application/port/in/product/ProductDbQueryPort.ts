@@ -5,4 +5,5 @@ export interface ProductDbQueryPort {
   getProduct(id: number): Promise<Product>;
   getProducts(query: GetProductsQuery): Promise<Product[]>;
   getNextPicsProducts(ids: number[]): Promise<NextPickProduct[]>;
+  getUniversalProducts(): Promise<Product[]>;
 }

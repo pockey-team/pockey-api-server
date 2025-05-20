@@ -55,6 +55,9 @@ export class ProductDbEntity {
   @Property({ type: 'json' })
   nextPickProductIds: number[];
 
+  @Property({ type: 'boolean' })
+  isUniversal: boolean;
+
   @Property({ onCreate: () => new Date() })
   createdAt: Date;
 
