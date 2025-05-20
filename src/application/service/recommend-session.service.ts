@@ -12,7 +12,6 @@ import {
   RecommendSessionStepType,
 } from '../../domain/recommend-session';
 import {
-  RecommendProductNotFoundException,
   RecommendSessionAlreadyEndedException,
   RecommendSessionInvalidAnswerException,
   RecommendSessionInvalidStepException,
@@ -272,10 +271,6 @@ export class RecommendSessionService implements RecommendSessionUseCase {
       priceRange: step4Answer,
       friendshipLevel: step3Answer,
     });
-    if (recommendProducts.length === 0) {
-      throw new RecommendProductNotFoundException();
-    }
-
     if (recommendProducts.length < 3) {
       const universalProducts = await this.productDbQueryPort.getUniversalProducts();
       recommendProducts = [...recommendProducts, ...universalProducts];
