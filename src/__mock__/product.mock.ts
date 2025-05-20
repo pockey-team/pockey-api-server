@@ -17,27 +17,4 @@ export const productMockData: Readonly<Product> = {
   targetGender: '성별 무관',
   tags: ['여행', '특별한 날 기념', '즉흥적인 모임'],
   nextPickProductIds: [2, 3, 4],
-  nextPickProducts: [
-    {
-      id: 2,
-      name: 'Kodak 코닥 일회용 플래시 카메라 / 펀 세이버 39 / Fun Saver',
-      url: 'https://smartstore.naver.com/coredak/products/4785024689',
-      imageUrl:
-        'https://shop-phinf.pstatic.net/20230309_236/1678356887222OXhnk_JPEG/79492775933138141_1309223572.jpg?type=m510',
-    },
-    {
-      id: 3,
-      name: 'Kodak 코닥 일회용 플래시 카메라 / 펀 세이버 39 / Fun Saver',
-      url: 'https://smartstore.naver.com/coredak/products/4785024689',
-      imageUrl:
-        'https://shop-phinf.pstatic.net/20230309_236/1678356887222OXhnk_JPEG/79492775933138141_1309223572.jpg?type=m510',
-    },
-    {
-      id: 4,
-      name: 'Kodak 코닥 일회용 플래시 카메라 / 펀 세이버 39 / Fun Saver',
-      url: 'https://smartstore.naver.com/coredak/products/4785024689',
-      imageUrl:
-        'https://shop-phinf.pstatic.net/20230309_236/1678356887222OXhnk_JPEG/79492775933138141_1309223572.jpg?type=m510',
-    },
-  ],
 };

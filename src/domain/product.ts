@@ -14,7 +14,7 @@ export class Product {
   targetGender: string;
   tags: string[];
   nextPickProductIds: number[];
-  nextPickProducts: NextPickProduct[];
+  nextPickProducts?: NextPickProduct[];
 }
 
 export class NextPickProduct {

@@ -40,6 +40,11 @@ export class ProductGateway implements ProductDbQueryPort {
     return products.map(mapToProduct);
   }
 
+  async getUniversalProducts(): Promise<Product[]> {
+    const products = await this.productRepository.find({ isUniversal: true });
+    return products.map(mapToProduct);
+  }
+
   async getNextPicsProducts(ids: number[]): Promise<NextPickProduct[]> {
     const products = await this.productRepository.find({ id: { $in: ids } });
     return products.map(mapToNextPickProduct);
