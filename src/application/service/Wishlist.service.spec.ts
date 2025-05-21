@@ -4,9 +4,10 @@ import { WishlistService } from './Wishlist.service';
 import {
   createWishlistMock,
   domainWishlistMock,
-  validWishlistItem,
+  validWishlistProduct,
+  wishlistDetailMock,
+  wishlistDetailWithDeletedMock,
   wishlistGroupedMock,
-  wishlistGroupedWithDeletedMock,
 } from '../../__mock__/wishlist.mock';
 import {
   ForbiddenWishlistAccessException,
@@ -33,6 +34,7 @@ describe('WishlistService', () => {
             removeWishlist: jest.fn(),
             getWishlistById: jest.fn(),
             getAllByUserId: jest.fn(),
+            getByUserIdAndReceiverName: jest.fn(),
           },
         },
         {
@@ -106,13 +108,7 @@ describe('WishlistService', () => {
       //given
       const userId = 1;
       queryPortMock.getAllByUserId.mockResolvedValueOnce([domainWishlistMock]);
-      productPortMock.getWishlistProductsByIds.mockResolvedValueOnce([
-        {
-          id: validWishlistItem.productId,
-          name: validWishlistItem.name,
-          imageUrl: validWishlistItem.imageUrl,
-        },
-      ]);
+      productPortMock.getWishlistProductsByIds.mockResolvedValueOnce([validWishlistProduct]);
 
       //when
       const result = await service.getWishlistSummary(userId);
@@ -122,26 +118,48 @@ describe('WishlistService', () => {
       expect(queryPortMock.getAllByUserId).toHaveBeenCalledWith(userId);
       expect(productPortMock.getWishlistProductsByIds).toHaveBeenCalledWith([101]);
     });
+  });
+  describe('getWishlistByReceiver', () => {
+    it('특정 수신자의 위시리스트 상세 목록을 반환할 수 있다', async () => {
+      // given
+      const userId = 1;
+      const receiverName = '민수';
+
+      queryPortMock.getByUserIdAndReceiverName.mockResolvedValueOnce([domainWishlistMock]);
+
+      productPortMock.getWishlistProductsByIds.mockResolvedValueOnce([validWishlistProduct]);
+
+      // when
+      const result = await service.getWishlistByReceiver(userId, receiverName);
+
+      // then
+      expect(result).toEqual(wishlistDetailMock);
+      expect(queryPortMock.getByUserIdAndReceiverName).toHaveBeenCalledWith(userId, receiverName);
+      expect(productPortMock.getWishlistProductsByIds).toHaveBeenCalledWith([101]);
+    });
+
     it('삭제된 상품의 경우 deleted: true로 응답해야 한다', async () => {
       //given
       const userId = 1;
-      queryPortMock.getAllByUserId.mockResolvedValueOnce([
+      const receiverName = '민수';
+
+      queryPortMock.getByUserIdAndReceiverName.mockResolvedValueOnce([
         {
           id: 2,
           userId,
           productId: 999,
-          receiverName: '민수',
-          createdAt: new Date('2025-05-14T12:05:00Z'),
+          receiverName,
+          createdAt: new Date('2025-05-21T10:00:00Z'),
         },
       ]);
       productPortMock.getWishlistProductsByIds.mockResolvedValueOnce([]);
 
       //when
-      const result = await service.getWishlistSummary(userId);
+      const result = await service.getWishlistByReceiver(userId, receiverName);
 
       //then
-      expect(result).toEqual(wishlistGroupedWithDeletedMock);
-      expect(queryPortMock.getAllByUserId).toHaveBeenCalledWith(userId);
+      expect(result).toEqual(wishlistDetailWithDeletedMock);
+      expect(queryPortMock.getByUserIdAndReceiverName).toHaveBeenCalledWith(userId, receiverName);
       expect(productPortMock.getWishlistProductsByIds).toHaveBeenCalledWith([999]);
     });
   });

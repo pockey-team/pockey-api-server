@@ -1,5 +1,5 @@
 import { AddWishlistCommand } from 'src/application/port/in/wishlist/WishlistUseCase';
-import { Wishlist, WishlistGroupedByReceiver, WishlistSummary } from 'src/domain/wishlist';
+import { Wishlist, WishlistItem, WishlistSummary } from 'src/domain/wishlist';
 
 export const createWishlistMock: Readonly<AddWishlistCommand> = {
   userId: 1,
@@ -7,23 +7,6 @@ export const createWishlistMock: Readonly<AddWishlistCommand> = {
   receiverName: '민수',
 };
 
-export const validWishlistItem = {
-  wishlistId: 1,
-  productId: 101,
-  name: '감성 무드등',
-  imageUrl: 'https://example.com/image.jpg',
-  deleted: false,
-  createdAt: new Date('2025-05-14T12:00:00Z'),
-};
-
-export const deletedWishlistItem = {
-  wishlistId: 2,
-  productId: 999,
-  name: null,
-  imageUrl: null,
-  deleted: true,
-  createdAt: new Date('2025-05-14T12:05:00Z'),
-};
 export const wishlistGroupedMock: WishlistSummary[] = [
   {
     receiverName: '민수',
@@ -31,16 +14,45 @@ export const wishlistGroupedMock: WishlistSummary[] = [
     imageUrls: ['https://example.com/image.jpg'],
   },
 ];
-export const wishlistGroupedWithDeletedMock: WishlistGroupedByReceiver[] = [
+
+export const validWishlistProduct = {
+  id: 101,
+  name: '감성 무드등',
+  imageUrl: 'https://example.com/image.jpg',
+  price: 10000,
+};
+
+export const wishlistDetailMock = [
   {
-    receiverName: '민수',
-    items: [deletedWishlistItem],
+    wishlistId: 1,
+    product: {
+      productId: 101,
+      name: '감성 무드등',
+      price: 10000,
+      imageUrl: 'https://example.com/image.jpg',
+    },
+    deleted: false,
+    createdAt: new Date('2025-05-21T10:00:00Z'),
   },
 ];
+export const wishlistDetailWithDeletedMock: WishlistItem[] = [
+  {
+    wishlistId: 2,
+    product: {
+      productId: 999,
+      name: null,
+      price: null,
+      imageUrl: null,
+    },
+    deleted: true,
+    createdAt: new Date('2025-05-21T10:00:00Z'),
+  },
+];
+
 export const domainWishlistMock: Wishlist = {
   id: 1,
   userId: 1,
   productId: 101,
   receiverName: '민수',
-  createdAt: new Date('2025-05-14T12:00:00Z'),
+  createdAt: new Date('2025-05-21T10:00:00Z'),
 };

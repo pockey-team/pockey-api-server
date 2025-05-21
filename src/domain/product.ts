@@ -20,4 +20,5 @@ export class WishlistProduct {
   id: number;
   name: string;
   imageUrl: string;
+  price: number;
 }

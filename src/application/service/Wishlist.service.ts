@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { WishlistSummary } from 'src/domain/wishlist';
+import { WishlistItem, WishlistSummary } from 'src/domain/wishlist';
 
 import {
   ForbiddenWishlistAccessException,
@@ -57,6 +57,33 @@ export class WishlistService implements WishlistUseCase {
     }
 
     return result;
+  }
+
+  async getWishlistByReceiver(userid: number, receiverName: string): Promise<WishlistItem[]> {
+    const wishlists = await this.wishlistDbQueryPort.getByUserIdAndReceiverName(
+      userid,
+      receiverName,
+    );
+    const productIds = wishlists.map(w => w.productId);
+
+    const products = await this.productDbQueryPort.getWishlistProductsByIds(productIds);
+    const productMap = new Map(products.map(p => [p.id, p]));
+
+    return wishlists.map(item => {
+      const product = productMap.get(item.productId);
+
+      return {
+        wishlistId: item.id,
+        product: {
+          productId: item.productId,
+          name: product?.name ?? null,
+          price: product?.price ?? null,
+          imageUrl: product?.imageUrl ?? null,
+        },
+        deleted: !product,
+        createdAt: item.createdAt,
+      };
+    });
   }
 
   async addToWishlist(command: AddWishlistCommand): Promise<void> {

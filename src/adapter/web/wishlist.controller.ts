@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Inject, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Inject,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import {
   AddWishlistCommand,
   AddWishlistRequest,
@@ -6,7 +16,7 @@ import {
 } from 'src/application/port/in/wishlist/WishlistUseCase';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { User } from 'src/domain/user';
-import { WishlistSummary } from 'src/domain/wishlist';
+import { WishlistItem, WishlistSummary } from 'src/domain/wishlist';
 import { JwtAuthGuard } from 'src/framework/auth/guard';
 
 @UseGuards(JwtAuthGuard)
@@ -36,5 +46,13 @@ export class WishlistController {
   async getWishlistSummary(@GetUser() user: User): Promise<WishlistSummary[]> {
     const userId = user.id;
     return this.wishlistUseCase.getWishlistSummary(userId);
+  }
+
+  @Get()
+  async getWishlistByReceiver(
+    @GetUser() user: User,
+    @Query('receiverName') receiverName: string,
+  ): Promise<WishlistItem[]> {
+    return this.wishlistUseCase.getWishlistByReceiver(user.id, receiverName);
   }
 }
