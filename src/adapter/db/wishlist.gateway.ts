@@ -38,6 +38,15 @@ export class WishlistGateway implements WishlistDbCommandPort, WishlistDbQueryPo
     return entities.map(mapToWishlist);
   }
 
+  async getByUserIdAndReceiverName(userId: number, receiverName: string): Promise<Wishlist[]> {
+    const entities = await this.wishlistRepository.find(
+      { userId, receiverName },
+      { orderBy: { createdAt: 'desc' } },
+    );
+
+    return entities.map(mapToWishlist);
+  }
+
   async addWishlist(command: AddWishlistCommand): Promise<void> {
     const entity = this.wishlistRepository.create({
       userId: command.userId,

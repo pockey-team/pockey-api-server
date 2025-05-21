@@ -8,9 +8,13 @@ export class Wishlist {
 
 export class WishlistItem {
   wishlistId: number;
-  productId: number;
-  name: string | null;
-  imageUrl: string | null;
+  product: {
+    productId: number;
+    name: string | null;
+    price: number | null;
+    imageUrl: string | null;
+  };
+
   deleted: boolean;
   createdAt: Date;
 }
