@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { WishlistGroupedByReceiver, WishlistItem } from 'src/domain/wishlist';
+import { WishlistSummary } from 'src/domain/wishlist';
 
 import {
   ForbiddenWishlistAccessException,
@@ -21,37 +21,42 @@ export class WishlistService implements WishlistUseCase {
     private readonly productDbQueryPort: ProductDbQueryPort,
   ) {}
 
-  async getGroupedByReceiver(userId: number): Promise<WishlistGroupedByReceiver[]> {
+  async getWishlistSummary(userId: number): Promise<WishlistSummary[]> {
     const wishlists = await this.wishlistDbQueryPort.getAllByUserId(userId);
     const productIds = wishlists.map(w => w.productId);
 
     const products = await this.productDbQueryPort.getWishlistProductsByIds(productIds);
     const productMap = new Map(products.map(p => [p.id, p]));
 
-    const grouped = new Map<string, WishlistItem[]>();
+    const grouped = new Map<string, string[]>();
+
+    const countMap = new Map<string, number>();
 
     for (const item of wishlists) {
       const product = productMap.get(item.productId);
+      const imageUrl = product?.imageUrl ?? null;
 
-      const dto: WishlistItem = {
-        wishlistId: item.id,
-        productId: item.productId,
-        name: product ? product.name : null,
-        imageUrl: product ? product.imageUrl : null,
-        deleted: !product,
-        createdAt: item.createdAt,
-      };
+      countMap.set(item.receiverName, (countMap.get(item.receiverName) ?? 0) + 1);
 
       if (!grouped.has(item.receiverName)) {
         grouped.set(item.receiverName, []);
       }
-      grouped.get(item.receiverName)!.push(dto);
+      if (imageUrl) {
+        grouped.get(item.receiverName)!.push(imageUrl);
+      }
     }
 
-    return Array.from(grouped.entries()).map(([receiverName, items]) => ({
-      receiverName,
-      items,
-    }));
+    const result: WishlistSummary[] = [];
+
+    for (const [receiverName, imageUrls] of grouped.entries()) {
+      result.push({
+        receiverName,
+        count: countMap.get(receiverName) ?? 0,
+        imageUrls,
+      });
+    }
+
+    return result;
   }
 
   async addToWishlist(command: AddWishlistCommand): Promise<void> {

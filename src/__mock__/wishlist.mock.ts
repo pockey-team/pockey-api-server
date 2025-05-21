@@ -1,5 +1,5 @@
 import { AddWishlistCommand } from 'src/application/port/in/wishlist/WishlistUseCase';
-import { Wishlist, WishlistGroupedByReceiver } from 'src/domain/wishlist';
+import { Wishlist, WishlistGroupedByReceiver, WishlistSummary } from 'src/domain/wishlist';
 
 export const createWishlistMock: Readonly<AddWishlistCommand> = {
   userId: 1,
@@ -24,10 +24,11 @@ export const deletedWishlistItem = {
   deleted: true,
   createdAt: new Date('2025-05-14T12:05:00Z'),
 };
-export const wishlistGroupedMock: WishlistGroupedByReceiver[] = [
+export const wishlistGroupedMock: WishlistSummary[] = [
   {
     receiverName: '민수',
-    items: [validWishlistItem],
+    count: 1,
+    imageUrls: ['https://example.com/image.jpg'],
   },
 ];
 export const wishlistGroupedWithDeletedMock: WishlistGroupedByReceiver[] = [
