@@ -1,6 +1,6 @@
 import { IsNumber, IsString } from 'class-validator';
 import { SwaggerDto } from 'src/common/decorators/swagger-dto.decorator';
-import { WishlistGroupedByReceiver } from 'src/domain/wishlist';
+import { WishlistSummary } from 'src/domain/wishlist';
 
 @SwaggerDto()
 export class AddWishlistRequest {
@@ -16,7 +16,7 @@ export interface AddWishlistCommand extends AddWishlistRequest {
 }
 
 export interface WishlistUseCase {
-  getGroupedByReceiver(userId: number): Promise<WishlistGroupedByReceiver[]>;
+  getWishlistSummary(userId: number): Promise<WishlistSummary[]>;
   addToWishlist(command: AddWishlistCommand): Promise<void>;
   removeFromWishlist(wishlistId: number, userId: number): Promise<void>;
 }

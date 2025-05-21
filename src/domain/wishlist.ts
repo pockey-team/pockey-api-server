@@ -15,6 +15,12 @@ export class WishlistItem {
   createdAt: Date;
 }
 
+export class WishlistSummary {
+  receiverName: string;
+  count: number;
+  imageUrls: string[];
+}
+
 export class WishlistGroupedByReceiver {
   receiverName: string;
   items: WishlistItem[];

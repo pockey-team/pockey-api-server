@@ -101,8 +101,8 @@ describe('WishlistService', () => {
       );
     });
   });
-  describe('getGroupedByReceiver', () => {
-    it('사용자의 위시리스트 받는 사람을 기준으로 그룹화해 조회할 수 있다', async () => {
+  describe('getWishlistSummary', () => {
+    it('사용자의 위시리스트 받는 사람을 기준으로 요약 조회할 수 있다', async () => {
       //given
       const userId = 1;
       queryPortMock.getAllByUserId.mockResolvedValueOnce([domainWishlistMock]);
@@ -115,7 +115,7 @@ describe('WishlistService', () => {
       ]);
 
       //when
-      const result = await service.getGroupedByReceiver(userId);
+      const result = await service.getWishlistSummary(userId);
 
       //then
       expect(result).toEqual(wishlistGroupedMock);
@@ -137,7 +137,7 @@ describe('WishlistService', () => {
       productPortMock.getWishlistProductsByIds.mockResolvedValueOnce([]);
 
       //when
-      const result = await service.getGroupedByReceiver(userId);
+      const result = await service.getWishlistSummary(userId);
 
       //then
       expect(result).toEqual(wishlistGroupedWithDeletedMock);

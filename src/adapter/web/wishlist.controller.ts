@@ -6,7 +6,7 @@ import {
 } from 'src/application/port/in/wishlist/WishlistUseCase';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { User } from 'src/domain/user';
-import { WishlistGroupedByReceiver } from 'src/domain/wishlist';
+import { WishlistSummary } from 'src/domain/wishlist';
 import { JwtAuthGuard } from 'src/framework/auth/guard';
 
 @UseGuards(JwtAuthGuard)
@@ -32,9 +32,9 @@ export class WishlistController {
     await this.wishlistUseCase.removeFromWishlist(Number(id), user.id);
   }
 
-  @Get()
-  async getWishlist(@GetUser() user: User): Promise<WishlistGroupedByReceiver[]> {
+  @Get('summary')
+  async getWishlistSummary(@GetUser() user: User): Promise<WishlistSummary[]> {
     const userId = user.id;
-    return this.wishlistUseCase.getGroupedByReceiver(userId);
+    return this.wishlistUseCase.getWishlistSummary(userId);
   }
 }
