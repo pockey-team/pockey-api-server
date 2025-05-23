@@ -16,7 +16,6 @@ export class WishlistItem {
   };
 
   deleted: boolean;
-  createdAt: Date;
 }
 
 export class WishlistGroups {

@@ -73,7 +73,6 @@ export class WishlistService implements WishlistUseCase {
           imageUrl: product?.imageUrl ?? null,
         },
         deleted: !product,
-        createdAt: item.createdAt,
       };
     });
   }
