@@ -40,7 +40,6 @@ export const wishlistDetailMock: WishlistItem[] = [
       imageUrl: 'https://example.com/image.jpg',
     },
     deleted: false,
-    createdAt: new Date('2025-05-21T10:00:00Z'),
   },
 ];
 export const wishlistDetailWithDeletedMock: WishlistItem[] = [
@@ -53,6 +52,5 @@ export const wishlistDetailWithDeletedMock: WishlistItem[] = [
       imageUrl: null,
     },
     deleted: true,
-    createdAt: new Date('2025-05-21T10:00:00Z'),
   },
 ];
