@@ -9,7 +9,7 @@ export class Wishlist {
 export class WishlistItem {
   wishlistId: number;
   product: {
-    productId: number;
+    id: number;
     name: string | null;
     price: number | null;
     imageUrl: string | null;
@@ -19,7 +19,7 @@ export class WishlistItem {
   createdAt: Date;
 }
 
-export class WishlistSummary {
+export class WishlistGroups {
   receiverName: string;
   count: number;
   imageUrls: string[];
