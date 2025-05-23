@@ -59,7 +59,10 @@ export class WishlistGateway implements WishlistDbCommandPort, WishlistDbQueryPo
 
   async removeWishlist(wishlistId: number): Promise<void> {
     const wishlist = await this.wishlistRepository.findOne({ id: wishlistId });
+    if (!wishlist) {
+      throw new WishlistNotFoundException();
+    }
 
-    await this.em.removeAndFlush(wishlist!);
+    await this.em.removeAndFlush(wishlist);
   }
 }

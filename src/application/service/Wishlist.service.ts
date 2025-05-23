@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { WishlistItem, WishlistSummary } from 'src/domain/wishlist';
+import { Wishlist, WishlistGroups, WishlistItem } from 'src/domain/wishlist';
 
 import {
   ForbiddenWishlistAccessException,
@@ -21,61 +21,53 @@ export class WishlistService implements WishlistUseCase {
     private readonly productDbQueryPort: ProductDbQueryPort,
   ) {}
 
-  async getWishlistSummary(userId: number): Promise<WishlistSummary[]> {
+  async getWishlistGroups(userId: number): Promise<WishlistGroups[]> {
     const wishlists = await this.wishlistDbQueryPort.getAllByUserId(userId);
-    const productIds = wishlists.map(w => w.productId);
 
-    const products = await this.productDbQueryPort.getWishlistProductsByIds(productIds);
-    const productMap = new Map(products.map(p => [p.id, p]));
-
-    const grouped = new Map<string, string[]>();
-
-    const countMap = new Map<string, number>();
-
+    const groupedByReceiver = new Map<string, Wishlist[]>();
     for (const item of wishlists) {
-      const product = productMap.get(item.productId);
-      const imageUrl = product?.imageUrl ?? null;
-
-      countMap.set(item.receiverName, (countMap.get(item.receiverName) ?? 0) + 1);
-
-      if (!grouped.has(item.receiverName)) {
-        grouped.set(item.receiverName, []);
+      if (!groupedByReceiver.has(item.receiverName)) {
+        groupedByReceiver.set(item.receiverName, []);
       }
-      if (imageUrl) {
-        grouped.get(item.receiverName)!.push(imageUrl);
-      }
+      groupedByReceiver.get(item.receiverName)!.push(item);
     }
 
-    const result: WishlistSummary[] = [];
+    const result: WishlistGroups[] = [];
 
-    for (const [receiverName, imageUrls] of grouped.entries()) {
-      result.push({
-        receiverName,
-        count: countMap.get(receiverName) ?? 0,
-        imageUrls,
-      });
-    }
+    await Promise.all(
+      Array.from(groupedByReceiver.entries()).map(async ([receiverName, items]) => {
+        const productIds = items.map(w => w.productId);
+
+        const products = await this.productDbQueryPort.getWishlistProductsByIds(productIds);
+
+        const imageUrls = products.map(p => p.imageUrl);
+
+        result.push({
+          receiverName,
+          count: items.length,
+          imageUrls,
+        });
+      }),
+    );
 
     return result;
   }
 
-  async getWishlistByReceiver(userid: number, receiverName: string): Promise<WishlistItem[]> {
+  async getWishlistsByReceiverName(userid: number, receiverName: string): Promise<WishlistItem[]> {
     const wishlists = await this.wishlistDbQueryPort.getByUserIdAndReceiverName(
       userid,
       receiverName,
     );
     const productIds = wishlists.map(w => w.productId);
-
     const products = await this.productDbQueryPort.getWishlistProductsByIds(productIds);
-    const productMap = new Map(products.map(p => [p.id, p]));
 
     return wishlists.map(item => {
-      const product = productMap.get(item.productId);
+      const product = products.find(p => p.id === item.productId);
 
       return {
         wishlistId: item.id,
         product: {
-          productId: item.productId,
+          id: item.productId,
           name: product?.name ?? null,
           price: product?.price ?? null,
           imageUrl: product?.imageUrl ?? null,
@@ -86,20 +78,19 @@ export class WishlistService implements WishlistUseCase {
     });
   }
 
-  async addToWishlist(command: AddWishlistCommand): Promise<void> {
+  async addWishlist(command: AddWishlistCommand): Promise<void> {
     await this.wishlistDbCommandPort.addWishlist(command);
   }
 
-  async removeFromWishlist(wishlistId: number, userId: number): Promise<void> {
+  async removeWishlist(wishlistId: number, userId: number): Promise<void> {
     const wishlist = await this.wishlistDbQueryPort.getWishlistById(wishlistId);
-
     if (!wishlist) {
       throw new WishlistNotFoundException();
     }
-
     if (wishlist.userId !== userId) {
       throw new ForbiddenWishlistAccessException();
     }
+
     await this.wishlistDbCommandPort.removeWishlist(wishlistId);
   }
 }

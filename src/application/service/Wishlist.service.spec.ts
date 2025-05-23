@@ -56,26 +56,26 @@ describe('WishlistService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('addToWishlist', () => {
+  describe('addWishlist', () => {
     it('위시리스트에 상품을 추가할 수 있다', async () => {
       //given
       const command = createWishlistMock;
 
       //when
-      await service.addToWishlist(command);
+      await service.addWishlist(command);
 
       //then
       expect(commandPortMock.addWishlist).toHaveBeenCalledWith(command);
     });
   });
 
-  describe('removeFromWishlist', () => {
+  describe('removeWishlist', () => {
     it('자신의 위시리스트에서 상품을 삭제할 수 있다', async () => {
       //given
       queryPortMock.getWishlistById.mockResolvedValue(domainWishlistMock);
 
       //when
-      await service.removeFromWishlist(domainWishlistMock.id, domainWishlistMock.userId);
+      await service.removeWishlist(domainWishlistMock.id, domainWishlistMock.userId);
 
       //then
       expect(commandPortMock.removeWishlist).toHaveBeenCalledWith(domainWishlistMock.id);
@@ -89,7 +89,7 @@ describe('WishlistService', () => {
       });
 
       // then
-      await expect(service.removeFromWishlist(wishlistId, userId)).rejects.toThrow(
+      await expect(service.removeWishlist(wishlistId, userId)).rejects.toThrow(
         WishlistNotFoundException,
       );
     });
@@ -98,20 +98,20 @@ describe('WishlistService', () => {
       queryPortMock.getWishlistById.mockResolvedValue({ ...domainWishlistMock, userId: 999 });
 
       // then
-      await expect(service.removeFromWishlist(domainWishlistMock.id, 1)).rejects.toThrow(
+      await expect(service.removeWishlist(domainWishlistMock.id, 1)).rejects.toThrow(
         ForbiddenWishlistAccessException,
       );
     });
   });
-  describe('getWishlistSummary', () => {
-    it('사용자의 위시리스트 받는 사람을 기준으로 요약 조회할 수 있다', async () => {
+  describe('getWishlistGroups', () => {
+    it('사용자의 위시리스트 수신자 기준으로 그룹핑하여 반환할 수 있다', async () => {
       //given
       const userId = 1;
       queryPortMock.getAllByUserId.mockResolvedValueOnce([domainWishlistMock]);
       productPortMock.getWishlistProductsByIds.mockResolvedValueOnce([validWishlistProduct]);
 
       //when
-      const result = await service.getWishlistSummary(userId);
+      const result = await service.getWishlistGroups(userId);
 
       //then
       expect(result).toEqual(wishlistGroupedMock);
@@ -120,17 +120,15 @@ describe('WishlistService', () => {
     });
   });
   describe('getWishlistByReceiver', () => {
-    it('특정 수신자의 위시리스트 상세 목록을 반환할 수 있다', async () => {
+    it('receiverName으로 위시리스트 상세 목록을 반환한다', async () => {
       // given
       const userId = 1;
       const receiverName = '민수';
-
       queryPortMock.getByUserIdAndReceiverName.mockResolvedValueOnce([domainWishlistMock]);
-
       productPortMock.getWishlistProductsByIds.mockResolvedValueOnce([validWishlistProduct]);
 
       // when
-      const result = await service.getWishlistByReceiver(userId, receiverName);
+      const result = await service.getWishlistsByReceiverName(userId, receiverName);
 
       // then
       expect(result).toEqual(wishlistDetailMock);
@@ -138,11 +136,10 @@ describe('WishlistService', () => {
       expect(productPortMock.getWishlistProductsByIds).toHaveBeenCalledWith([101]);
     });
 
-    it('삭제된 상품의 경우 deleted: true로 응답해야 한다', async () => {
+    it('삭제된 상품이면 deleted: true로 반환한다', async () => {
       //given
       const userId = 1;
       const receiverName = '민수';
-
       queryPortMock.getByUserIdAndReceiverName.mockResolvedValueOnce([
         {
           id: 2,
@@ -155,7 +152,7 @@ describe('WishlistService', () => {
       productPortMock.getWishlistProductsByIds.mockResolvedValueOnce([]);
 
       //when
-      const result = await service.getWishlistByReceiver(userId, receiverName);
+      const result = await service.getWishlistsByReceiverName(userId, receiverName);
 
       //then
       expect(result).toEqual(wishlistDetailWithDeletedMock);
