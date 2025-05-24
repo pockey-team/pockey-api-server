@@ -48,15 +48,13 @@ export class CreateUserCommand {
 
 @SwaggerDto()
 export class WithdrawRequest {
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   reason: string;
 }
 
 @SwaggerDto()
 export class WithdrawCommand extends WithdrawRequest {
-  @IsInt()
-  @IsNotEmpty()
   userId: number;
 }
 
