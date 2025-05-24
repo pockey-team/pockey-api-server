@@ -161,10 +161,12 @@ export class RecommendSessionService implements RecommendSessionUseCase {
   ): Promise<RecommendSessionStep> {
     const commonQuestions = await this.commonQuestionDbQueryPort.getCommonQuestionsByStep(step);
     const commonQuestion = commonQuestions[0];
+    const question =
+      step <= 3 ? `${receiverName}${commonQuestion.question}` : commonQuestion.question;
     const recommendSessionStep = await this.sessionDbCommandPort.createStep({
       sessionId,
       step,
-      question: `${receiverName}${commonQuestion.question}`,
+      question,
       options: commonQuestion.options,
     });
 
