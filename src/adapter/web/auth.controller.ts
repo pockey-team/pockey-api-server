@@ -1,7 +1,11 @@
 import { Body, Controller, Inject, Post } from '@nestjs/common';
 
 import { InvalidRefreshTokenException } from '../../application/common/error/exception';
-import { AuthUseCase, SocialLoginCommand } from '../../application/port/in/auth/AuthUseCase';
+import {
+  AuthUseCase,
+  SocialLoginCommand,
+  WithdrawRequest,
+} from '../../application/port/in/auth/AuthUseCase';
 import { IToken } from '../../domain/token';
 import { RequestInfo } from '../../framework/auth/decorator/request-info.decorator';
 
@@ -26,6 +30,17 @@ export class AuthController {
     return this.authUseCase.refreshToken({
       refreshToken: request.user.refreshToken,
       userId: request.user.id,
+    });
+  }
+
+  @Post('withdraw')
+  async withdraw(
+    @RequestInfo() request: RequestInfo,
+    @Body() body: WithdrawRequest,
+  ): Promise<void> {
+    return this.authUseCase.withdraw({
+      userId: request.user.id,
+      reason: body.reason,
     });
   }
 }

@@ -22,6 +22,9 @@ export class UserDbEntity {
   @Enum({ items: () => UserRole })
   role: UserRole;
 
+  @Property()
+  withdrawReason: string;
+
   @Property({ defaultRaw: 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
