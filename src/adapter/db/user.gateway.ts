@@ -20,7 +20,7 @@ export class UserGateway implements UserDbQueryPort, UserDbCommandPort {
   ) {}
 
   async getUserById(id: number): Promise<User> {
-    const user = await this.userRepository.findOne({ id });
+    const user = await this.userRepository.findOne({ id, deletedAt: null });
     if (!user) {
       throw new UserNotFoundException();
     }
@@ -29,7 +29,7 @@ export class UserGateway implements UserDbQueryPort, UserDbCommandPort {
   }
 
   async getUserBySnsId(snsId: string): Promise<User | null> {
-    const user = await this.userRepository.findOne({ snsId });
+    const user = await this.userRepository.findOne({ snsId, deletedAt: null });
     return user ? mapToUser(user) : null;
   }
 
