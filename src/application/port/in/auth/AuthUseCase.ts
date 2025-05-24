@@ -46,7 +46,22 @@ export class CreateUserCommand {
   profileImageUrl: string;
 }
 
+@SwaggerDto()
+export class WithdrawRequest {
+  @IsString()
+  @IsNotEmpty()
+  reason: string;
+}
+
+@SwaggerDto()
+export class WithdrawCommand extends WithdrawRequest {
+  @IsInt()
+  @IsNotEmpty()
+  userId: number;
+}
+
 export interface AuthUseCase {
   loginWithSocial(command: SocialLoginCommand): Promise<IToken>;
   refreshToken(command: RefreshTokenCommand): Promise<IToken>;
+  withdraw(command: WithdrawCommand): Promise<void>;
 }

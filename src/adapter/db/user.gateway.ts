@@ -43,4 +43,11 @@ export class UserGateway implements UserDbQueryPort, UserDbCommandPort {
     await this.em.persistAndFlush(entity);
     return entity.id;
   }
+
+  async removeUser(userId: number, reason: string): Promise<void> {
+    await this.userRepository.nativeUpdate(
+      { id: userId },
+      { deletedAt: new Date(), withdrawReason: reason },
+    );
+  }
 }
