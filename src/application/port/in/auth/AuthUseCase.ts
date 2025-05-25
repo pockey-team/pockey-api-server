@@ -53,7 +53,6 @@ export class WithdrawRequest {
   reason: string;
 }
 
-@SwaggerDto()
 export class WithdrawCommand extends WithdrawRequest {
   userId: number;
 }
