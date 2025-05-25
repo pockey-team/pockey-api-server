@@ -47,6 +47,10 @@ import { JwtStrategy } from '../auth/strategy';
       provide: 'RecommendSessionGateway',
       useClass: RecommendSessionGateway,
     },
+    {
+      provide: 'UserDbCommandPort',
+      useClass: UserGateway,
+    },
   ],
   exports: [JwtModule],
 })

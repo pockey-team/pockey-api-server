@@ -9,6 +9,7 @@ import {
   CreateUserCommand,
   RefreshTokenCommand,
   SocialLoginCommand,
+  WithdrawCommand,
 } from '../port/in/auth/AuthUseCase';
 import { RecommendSessionDbCommandPort } from '../port/out/RecommendSessionDbCommandPort';
 import { UserDbCommandPort } from '../port/out/UserDbCommandPort';
@@ -60,6 +61,10 @@ export class AuthService implements AuthUseCase {
     }
 
     return this.generateTokens(command.userId);
+  }
+
+  async withdraw(command: WithdrawCommand): Promise<void> {
+    return this.userDbCommandPort.removeUser(command.userId, command.reason);
   }
 
   public generateTokens(userId: number): IToken {
