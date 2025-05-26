@@ -9,7 +9,7 @@ export class WishlistDbEntity {
   userId: number;
 
   @Property()
-  productId!: number;
+  productId: number;
 
   @Property()
   receiverName: string;
