@@ -183,7 +183,7 @@ export class RecommendSessionService implements RecommendSessionUseCase {
     const recommendSessionStep = await this.sessionDbCommandPort.createStep({
       sessionId,
       step,
-      question: `${receiverName}${commonQuestion.question}`,
+      question: commonQuestion.question,
       options: commonQuestion.options,
     });
 
