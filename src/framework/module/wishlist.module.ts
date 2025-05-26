@@ -13,20 +13,17 @@ import { AuthGuardModule } from './auth.guard.module';
   imports: [MikroOrmModule.forFeature([WishlistDbEntity, ProductDbEntity]), AuthGuardModule],
   controllers: [WishlistController],
   providers: [
-    WishlistService,
-    WishlistGateway,
-    ProductGateway,
     {
       provide: 'WishlistUseCase',
       useClass: WishlistService,
     },
     {
       provide: 'WishlistGateway',
-      useExisting: WishlistGateway,
+      useClass: WishlistGateway,
     },
     {
       provide: 'ProductGateway',
-      useExisting: ProductGateway,
+      useClass: ProductGateway,
     },
   ],
 })

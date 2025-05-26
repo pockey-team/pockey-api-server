@@ -19,6 +19,5 @@ import { ProductService } from '../../application/service/product.service';
       useClass: ProductGateway,
     },
   ],
-  exports: ['ProductUseCase', 'ProductGateway'],
 })
 export class ProductModule {}
