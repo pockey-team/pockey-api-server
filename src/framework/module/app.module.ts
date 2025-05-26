@@ -11,6 +11,8 @@ import { PostModule } from './post.module';
 import { ProductModule } from './product.module';
 import { RecommendSessionModule } from './recommend-session.module';
 import { UserModule } from './user.module';
+import { WishlistModule } from './wishlist.module';
+import { JwtAuthGuard } from '../auth/guard';
 import createMikroOrmConfig from '../config/mikro-orm.config';
 
 @Module({
@@ -24,6 +26,7 @@ import createMikroOrmConfig from '../config/mikro-orm.config';
     ProductModule,
     UserModule,
     RecommendSessionModule,
+    WishlistModule,
     MikroOrmModule.forRootAsync({
       useFactory: async () => await createMikroOrmConfig(),
     }),
@@ -40,6 +43,7 @@ import createMikroOrmConfig from '../config/mikro-orm.config';
               { path: 'product', module: ProductModule },
               { path: 'recommend-session', module: RecommendSessionModule },
               { path: 'user', module: UserModule },
+              { path: 'wishlist', module: WishlistModule },
             ],
           },
         ],
