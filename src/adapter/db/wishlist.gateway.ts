@@ -20,8 +20,8 @@ export class WishlistGateway implements WishlistDbCommandPort, WishlistDbQueryPo
     private readonly em: EntityManager,
   ) {}
 
-  async getWishlistById(wishlistId: number): Promise<Wishlist> {
-    const wishlist = await this.wishlistRepository.findOne({ id: wishlistId });
+  async getWishlistById(id: number): Promise<Wishlist> {
+    const wishlist = await this.wishlistRepository.findOne({ id });
 
     if (!wishlist) {
       throw new WishlistNotFoundException();
@@ -30,7 +30,7 @@ export class WishlistGateway implements WishlistDbCommandPort, WishlistDbQueryPo
     return mapToWishlist(wishlist);
   }
 
-  async getAllByUserId(userId: number): Promise<Wishlist[]> {
+  async getUserWishlistByUserId(userId: number): Promise<Wishlist[]> {
     const entities = await this.wishlistRepository.find(
       { userId },
       { orderBy: { createdAt: 'desc' } },

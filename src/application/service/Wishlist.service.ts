@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Wishlist, WishlistGroups, WishlistItem } from 'src/domain/wishlist';
+import { WishlistGroups, WishlistItem } from 'src/domain/wishlist';
 
 import {
   ForbiddenWishlistAccessException,
@@ -21,36 +21,20 @@ export class WishlistService implements WishlistUseCase {
     private readonly productDbQueryPort: ProductDbQueryPort,
   ) {}
 
-  async getWishlistGroups(userId: number): Promise<WishlistGroups[]> {
-    const wishlists = await this.wishlistDbQueryPort.getAllByUserId(userId);
+  async getWishlistGroupsByUserId(userId: number): Promise<WishlistGroups[]> {
+    const wishlists = await this.wishlistDbQueryPort.getUserWishlistByUserId(userId);
+    const receiverNames = wishlists.map(wishlist => wishlist.receiverName);
 
-    const groupedByReceiver = new Map<string, Wishlist[]>();
-    for (const item of wishlists) {
-      if (!groupedByReceiver.has(item.receiverName)) {
-        groupedByReceiver.set(item.receiverName, []);
-      }
-      groupedByReceiver.get(item.receiverName)!.push(item);
-    }
-
-    const result: WishlistGroups[] = [];
-
-    await Promise.all(
-      Array.from(groupedByReceiver.entries()).map(async ([receiverName, items]) => {
-        const productIds = items.map(w => w.productId);
-
-        const products = await this.productDbQueryPort.getWishlistProductsByIds(productIds);
-
-        const imageUrls = products.map(p => p.imageUrl);
-
-        result.push({
+    return Promise.all(
+      receiverNames.map(async receiverName => {
+        const products = await this.productDbQueryPort.getWishlistProductsByReceiverName(
+          userId,
           receiverName,
-          count: items.length,
-          imageUrls,
-        });
+        );
+        const imageUrls = products.map(p => p.imageUrl);
+        return { receiverName, count: products.length, imageUrls };
       }),
     );
-
-    return result;
   }
 
   async getWishlistsByReceiverName(userid: number, receiverName: string): Promise<WishlistItem[]> {

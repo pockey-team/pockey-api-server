@@ -16,7 +16,7 @@ export interface AddWishlistCommand extends AddWishlistRequest {
 }
 
 export interface WishlistUseCase {
-  getWishlistGroups(userId: number): Promise<WishlistGroups[]>;
+  getWishlistGroupsByUserId(userId: number): Promise<WishlistGroups[]>;
   getWishlistsByReceiverName(userid: number, receiverName: string): Promise<WishlistItem[]>;
   addWishlist(command: AddWishlistCommand): Promise<void>;
   removeWishlist(wishlistId: number, userId: number): Promise<void>;

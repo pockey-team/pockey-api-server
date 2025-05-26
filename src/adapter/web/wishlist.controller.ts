@@ -45,7 +45,7 @@ export class WishlistController {
   @Get('summary')
   async getWishlistGroups(@GetUser() user: User): Promise<WishlistGroups[]> {
     const userId = user.id;
-    return this.wishlistUseCase.getWishlistGroups(userId);
+    return this.wishlistUseCase.getWishlistGroupsByUserId(userId);
   }
 
   @Get()
