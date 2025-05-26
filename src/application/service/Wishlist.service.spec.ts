@@ -32,7 +32,7 @@ describe('WishlistService', () => {
             removeWishlist: jest.fn(),
             getWishlistById: jest.fn(),
             getUserWishlistByUserId: jest.fn(),
-            getByUserIdAndReceiverName: jest.fn(),
+            getUserWishlistsByReceiverName: jest.fn(),
           },
         },
         {
@@ -53,6 +53,84 @@ describe('WishlistService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('getWishlistGroupsByUserId', () => {
+    it('사용자의 위시리스트 수신자 기준으로 그룹핑하여 반환할 수 있다', async () => {
+      //given
+      const userId = 1;
+      const receiverName = '민수';
+      queryPortMock.getUserWishlistByUserId.mockResolvedValueOnce([domainWishlistMockData]);
+      productPortMock.getWishlistProductsByReceiverName.mockResolvedValueOnce([
+        wishlistProductMockData,
+      ]);
+
+      //when
+      const result = await service.getWishlistGroupsByUserId(userId);
+
+      //then
+      expect(result).toEqual([wishlistGroupedMockData]);
+      expect(queryPortMock.getUserWishlistByUserId).toHaveBeenCalledWith(userId);
+      expect(productPortMock.getWishlistProductsByReceiverName).toHaveBeenCalledWith(receiverName);
+    });
+  });
+  describe('getWishlistsByReceiverName', () => {
+    it('receiverName으로 위시리스트 상세 목록을 반환한다', async () => {
+      // given
+      const userId = 1;
+      const productId = 101;
+      const receiverName = '민수';
+      queryPortMock.getUserWishlistsByReceiverName.mockResolvedValueOnce([domainWishlistMockData]);
+      productPortMock.getWishlistProductsByIds.mockResolvedValueOnce([wishlistProductMockData]);
+
+      // when
+      const result = await service.getWishlistsByReceiverName(userId, receiverName);
+
+      // then
+      expect(result).toEqual([wishlistDetailMockData]);
+      expect(queryPortMock.getUserWishlistsByReceiverName).toHaveBeenCalledWith(
+        userId,
+        receiverName,
+      );
+      expect(productPortMock.getWishlistProductsByIds).toHaveBeenCalledWith([productId]);
+    });
+
+    it('삭제된 상품이면 deleted: true로 반환한다', async () => {
+      //given
+      const userId = 1;
+      const receiverName = '민수';
+      queryPortMock.getUserWishlistsByReceiverName.mockResolvedValueOnce([
+        {
+          ...domainWishlistMockData,
+          id: 2,
+          productId: 999,
+        },
+      ]);
+      productPortMock.getWishlistProductsByIds.mockResolvedValueOnce([]);
+
+      //when
+      const result = await service.getWishlistsByReceiverName(userId, receiverName);
+
+      //then
+      expect(result).toEqual([
+        {
+          wishlistId: 2,
+          product: {
+            id: 999,
+            name: null,
+            price: null,
+            imageUrl: null,
+          },
+          deleted: true,
+        },
+      ]);
+
+      expect(queryPortMock.getUserWishlistsByReceiverName).toHaveBeenCalledWith(
+        userId,
+        receiverName,
+      );
+      expect(productPortMock.getWishlistProductsByIds).toHaveBeenCalledWith([999]);
+    });
   });
 
   describe('addWishlist', () => {
@@ -110,77 +188,6 @@ describe('WishlistService', () => {
       await expect(
         service.removeWishlist(domainWishlistMockData.id, requestUserId),
       ).rejects.toThrow(ForbiddenWishlistAccessException);
-    });
-  });
-  describe('getWishlistGroupsByUserId', () => {
-    it('사용자의 위시리스트 수신자 기준으로 그룹핑하여 반환할 수 있다', async () => {
-      //given
-      const userId = 1;
-      const receiverName = '민수';
-      queryPortMock.getUserWishlistByUserId.mockResolvedValueOnce([domainWishlistMockData]);
-      productPortMock.getWishlistProductsByReceiverName.mockResolvedValueOnce([
-        wishlistProductMockData,
-      ]);
-
-      //when
-      const result = await service.getWishlistGroupsByUserId(userId);
-
-      //then
-      expect(result).toEqual([wishlistGroupedMockData]);
-      expect(queryPortMock.getUserWishlistByUserId).toHaveBeenCalledWith(userId);
-      expect(productPortMock.getWishlistProductsByReceiverName).toHaveBeenCalledWith(receiverName);
-    });
-  });
-  describe('getWishlistsByReceiverName', () => {
-    it('receiverName으로 위시리스트 상세 목록을 반환한다', async () => {
-      // given
-      const userId = 1;
-      const productId = 101;
-      const receiverName = '민수';
-      queryPortMock.getByUserIdAndReceiverName.mockResolvedValueOnce([domainWishlistMockData]);
-      productPortMock.getWishlistProductsByIds.mockResolvedValueOnce([wishlistProductMockData]);
-
-      // when
-      const result = await service.getWishlistsByReceiverName(userId, receiverName);
-
-      // then
-      expect(result).toEqual([wishlistDetailMockData]);
-      expect(queryPortMock.getByUserIdAndReceiverName).toHaveBeenCalledWith(userId, receiverName);
-      expect(productPortMock.getWishlistProductsByIds).toHaveBeenCalledWith([productId]);
-    });
-
-    it('삭제된 상품이면 deleted: true로 반환한다', async () => {
-      //given
-      const userId = 1;
-      const receiverName = '민수';
-      queryPortMock.getByUserIdAndReceiverName.mockResolvedValueOnce([
-        {
-          ...domainWishlistMockData,
-          id: 2,
-          productId: 999,
-        },
-      ]);
-      productPortMock.getWishlistProductsByIds.mockResolvedValueOnce([]);
-
-      //when
-      const result = await service.getWishlistsByReceiverName(userId, receiverName);
-
-      //then
-      expect(result).toEqual([
-        {
-          wishlistId: 2,
-          product: {
-            id: 999,
-            name: null,
-            price: null,
-            imageUrl: null,
-          },
-          deleted: true,
-        },
-      ]);
-
-      expect(queryPortMock.getByUserIdAndReceiverName).toHaveBeenCalledWith(userId, receiverName);
-      expect(productPortMock.getWishlistProductsByIds).toHaveBeenCalledWith([999]);
     });
   });
 });

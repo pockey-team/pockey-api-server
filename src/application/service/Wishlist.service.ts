@@ -38,7 +38,7 @@ export class WishlistService implements WishlistUseCase {
   }
 
   async getWishlistsByReceiverName(userid: number, receiverName: string): Promise<WishlistItem[]> {
-    const wishlists = await this.wishlistDbQueryPort.getByUserIdAndReceiverName(
+    const wishlists = await this.wishlistDbQueryPort.getUserWishlistsByReceiverName(
       userid,
       receiverName,
     );
