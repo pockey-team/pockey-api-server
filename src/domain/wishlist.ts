@@ -10,10 +10,10 @@ export class WishlistItem {
   wishlistId: number;
   product: {
     id: number;
-    name: string | null;
-    price: number | null;
-    imageUrl: string | null;
-  };
+    name: string;
+    price: number;
+    imageUrl: string;
+  } | null;
 
   deleted: boolean;
 }

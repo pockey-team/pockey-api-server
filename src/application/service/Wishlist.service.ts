@@ -47,12 +47,14 @@ export class WishlistService implements WishlistUseCase {
 
       return {
         wishlistId: item.id,
-        product: {
-          id: item.productId,
-          name: product?.name ?? null,
-          price: product?.price ?? null,
-          imageUrl: product?.imageUrl ?? null,
-        },
+        product: product
+          ? {
+              id: item.productId,
+              name: product.name,
+              price: product.price,
+              imageUrl: product.imageUrl,
+            }
+          : null,
         deleted: !product,
       };
     });

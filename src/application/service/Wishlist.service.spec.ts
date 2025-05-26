@@ -115,12 +115,7 @@ describe('WishlistService', () => {
       expect(result).toEqual([
         {
           wishlistId: 2,
-          product: {
-            id: 999,
-            name: null,
-            price: null,
-            imageUrl: null,
-          },
+          product: null,
           deleted: true,
         },
       ]);
