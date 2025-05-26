@@ -1,5 +1,5 @@
 import { ProductDbEntity } from './product.entity';
-import { NextPickProduct, Product } from '../../domain/product';
+import { NextPickProduct, Product, WishlistProduct } from '../../domain/product';
 
 export const mapToProduct = (dbEntity: ProductDbEntity): Product => {
   return {
