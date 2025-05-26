@@ -146,6 +146,7 @@ describe('WishlistService', () => {
       await service.addWishlist(command);
 
       //then
+      expect(commandPortMock.addWishlist).toHaveBeenCalledTimes(1);
       expect(commandPortMock.addWishlist).toHaveBeenCalledWith(command);
     });
   });

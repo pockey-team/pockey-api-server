@@ -1,10 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WishlistGroups, WishlistItem } from 'src/domain/wishlist';
 
-import {
-  ForbiddenWishlistAccessException,
-  WishlistNotFoundException,
-} from '../common/error/exception/wishlist.exception';
+import { ForbiddenWishlistAccessException } from '../common/error/exception/wishlist.exception';
 import { ProductDbQueryPort } from '../port/in/product/ProductDbQueryPort';
 import { AddWishlistCommand, WishlistUseCase } from '../port/in/wishlist/WishlistUseCase';
 import { WishlistDbCommandPort } from '../port/out/WishlistDbCommandPort';
@@ -67,9 +64,7 @@ export class WishlistService implements WishlistUseCase {
 
   async removeWishlist(wishlistId: number, userId: number): Promise<void> {
     const wishlist = await this.wishlistDbQueryPort.getWishlistById(wishlistId);
-    if (!wishlist) {
-      throw new WishlistNotFoundException();
-    }
+
     if (wishlist.userId !== userId) {
       throw new ForbiddenWishlistAccessException();
     }
