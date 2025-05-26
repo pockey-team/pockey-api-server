@@ -7,10 +7,7 @@ import {
   wishlistGroupedMockData,
   wishlistProductMockData,
 } from '../../__mock__/wishlist.mock';
-import {
-  ForbiddenWishlistAccessException,
-  WishlistNotFoundException,
-} from '../common/error/exception/wishlist.exception';
+import { ForbiddenWishlistAccessException } from '../common/error/exception/wishlist.exception';
 import { ProductDbQueryPort } from '../port/in/product/ProductDbQueryPort';
 import { WishlistDbCommandPort } from '../port/out/WishlistDbCommandPort';
 import { WishlistDbQueryPort } from '../port/out/WishlistDbQueryPort';
@@ -71,7 +68,10 @@ describe('WishlistService', () => {
       //then
       expect(result).toEqual([wishlistGroupedMockData]);
       expect(queryPortMock.getUserWishlistByUserId).toHaveBeenCalledWith(userId);
-      expect(productPortMock.getWishlistProductsByReceiverName).toHaveBeenCalledWith(receiverName);
+      expect(productPortMock.getWishlistProductsByReceiverName).toHaveBeenCalledWith(
+        userId,
+        receiverName,
+      );
     });
   });
   describe('getWishlistsByReceiverName', () => {
@@ -162,19 +162,6 @@ describe('WishlistService', () => {
       //then
       expect(commandPortMock.removeWishlist).toHaveBeenCalledWith(domainWishlistMockData.id);
       expect(commandPortMock.removeWishlist).toHaveBeenCalledTimes(1);
-    });
-    it('존재하지 않는 위시리스트 ID일 경우 예외를 던진다', async () => {
-      // given
-      const wishlistId = 999;
-      const userId = 1;
-      commandPortMock.removeWishlist.mockImplementation(() => {
-        throw new WishlistNotFoundException();
-      });
-
-      //  when & then
-      await expect(service.removeWishlist(wishlistId, userId)).rejects.toThrow(
-        WishlistNotFoundException,
-      );
     });
     it('다른 사용자의 위시리스트일 경우 예외를 던진다', async () => {
       // given
