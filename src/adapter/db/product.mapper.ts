@@ -19,7 +19,7 @@ export const mapToProduct = (dbEntity: ProductDbEntity): Product => {
     tags: dbEntity.tags,
     nextPickProductIds: dbEntity.nextPickProductIds,
     nextPickProducts: [],
-    inWishlist: false,
+    isMyWishlist: false,
   };
 };
 

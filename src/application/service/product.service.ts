@@ -17,11 +17,11 @@ export class ProductService implements ProductUseCase {
   async getProduct(productId: number, userId: number): Promise<Product> {
     const product = await this.productDbQueryPort.getProduct(productId);
 
-    const isInWishlist = await this.wishlistDbQueryPort.isInWishlist(userId, productId);
+    const isMyWishlist = await this.wishlistDbQueryPort.isInWishlist(userId, productId);
 
     return {
       ...product,
-      inWishlist: isInWishlist,
+      isMyWishlist: isMyWishlist,
     };
   }
 }

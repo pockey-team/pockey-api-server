@@ -15,7 +15,7 @@ export class Product {
   tags: string[];
   nextPickProductIds: number[];
   nextPickProducts?: NextPickProduct[];
-  inWishlist: boolean;
+  isMyWishlist: boolean;
 }
 
 export class NextPickProduct {
