@@ -17,4 +17,5 @@ export const productMockData: Readonly<Product> = {
   targetGender: '성별 무관',
   tags: ['여행', '특별한 날 기념', '즉흥적인 모임'],
   nextPickProductIds: [2, 3, 4],
+  isMyWishlist: true,
 };

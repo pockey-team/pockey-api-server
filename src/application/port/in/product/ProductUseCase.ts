@@ -10,5 +10,5 @@ export class GetProductsQuery {
 }
 
 export interface ProductUseCase {
-  getProduct(id: number): Promise<Product>;
+  getProduct(productId: number, userId: number): Promise<Product>;
 }

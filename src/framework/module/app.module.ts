@@ -12,7 +12,6 @@ import { ProductModule } from './product.module';
 import { RecommendSessionModule } from './recommend-session.module';
 import { UserModule } from './user.module';
 import { WishlistModule } from './wishlist.module';
-import { JwtAuthGuard } from '../auth/guard';
 import createMikroOrmConfig from '../config/mikro-orm.config';
 
 @Module({
