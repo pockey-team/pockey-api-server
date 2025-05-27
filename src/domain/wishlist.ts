@@ -12,6 +12,7 @@ export class WishlistItem {
     id: number;
     name: string;
     price: number;
+    url: string;
     imageUrl: string;
   } | null;
 

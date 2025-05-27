@@ -27,6 +27,7 @@ export class NextPickProduct {
 export class WishlistProduct {
   id: number;
   name: string;
+  url: string;
   imageUrl: string;
   price: number;
 }

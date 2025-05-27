@@ -35,6 +35,7 @@ export const mapToWishlistProduct = (dbEntity: ProductDbEntity): WishlistProduct
   return {
     id: dbEntity.id,
     name: dbEntity.name,
+    url: dbEntity.url,
     imageUrl: dbEntity.imageUrl,
     price: dbEntity.price,
   };

@@ -52,6 +52,7 @@ export class WishlistService implements WishlistUseCase {
               id: item.productId,
               name: product.name,
               price: product.price,
+              url: product.url,
               imageUrl: product.imageUrl,
             }
           : null,
