@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { WishlistGroups, WishlistItem } from 'src/domain/wishlist';
+import { Wishlist, WishlistGroups, WishlistItem } from 'src/domain/wishlist';
 
 import { ForbiddenWishlistAccessException } from '../common/error/exception/wishlist.exception';
 import { ProductDbQueryPort } from '../port/in/product/ProductDbQueryPort';
@@ -20,18 +20,33 @@ export class WishlistService implements WishlistUseCase {
 
   async getWishlistGroupsByUserId(userId: number): Promise<WishlistGroups[]> {
     const wishlists = await this.wishlistDbQueryPort.getUserWishlistByUserId(userId);
-    const receiverNames = wishlists.map(wishlist => wishlist.receiverName);
 
-    return Promise.all(
-      receiverNames.map(async receiverName => {
-        const products = await this.productDbQueryPort.getWishlistProductsByReceiverName(
-          userId,
+    const groupedByReceiver = new Map<string, Wishlist[]>();
+    for (const item of wishlists) {
+      if (!groupedByReceiver.has(item.receiverName)) {
+        groupedByReceiver.set(item.receiverName, []);
+      }
+      groupedByReceiver.get(item.receiverName)!.push(item);
+    }
+    const result: WishlistGroups[] = [];
+    await Promise.all(
+      Array.from(groupedByReceiver.entries()).map(async ([receiverName, items]) => {
+        const productIds = items.map(w => w.productId);
+        const products = await this.productDbQueryPort.getWishlistProductsByIds(productIds);
+
+        const productImageMap = new Map<number, string>();
+        products.forEach(p => productImageMap.set(p.id, p.imageUrl));
+
+        const imageUrls = items.map(w => productImageMap.get(w.productId)!);
+
+        result.push({
           receiverName,
-        );
-        const imageUrls = products.map(p => p.imageUrl);
-        return { receiverName, count: products.length, imageUrls };
+          count: items.length,
+          imageUrls,
+        });
       }),
     );
+    return result;
   }
 
   async getWishlistsByReceiverName(userid: number, receiverName: string): Promise<WishlistItem[]> {
