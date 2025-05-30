@@ -112,16 +112,16 @@ export class RecommendSessionService implements RecommendSessionUseCase {
       throw new RecommendSessionInvalidStepException();
     }
 
-    if (!lastStep.options.some(option => option === command.answer)) {
-      throw new RecommendSessionInvalidAnswerException();
-    }
-
     const isUnderStep = command.step < lastStep.step;
     const isSameAndAlreadyAnswered = command.step === lastStep.step && lastStep.answer;
 
     if (isUnderStep || isSameAndAlreadyAnswered) {
       await this.sessionDbCommandPort.removeProgressedSteps(command.sessionId, command.step);
       lastStep = await this.sessionDbQueryPort.getLastStep(command.sessionId);
+    }
+
+    if (!lastStep.options.some(option => option === command.answer)) {
+      throw new RecommendSessionInvalidAnswerException();
     }
 
     await this.sessionDbCommandPort.updateAnswer(lastStep.id, command.answer);
