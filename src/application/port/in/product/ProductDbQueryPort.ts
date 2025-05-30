@@ -8,8 +8,4 @@ export interface ProductDbQueryPort {
   getUniversalProducts(): Promise<Product[]>;
   getProduct(id: number): Promise<Product>;
   getWishlistProductsByIds(ids: number[]): Promise<WishlistProduct[]>;
-  getWishlistProductsByReceiverName(
-    userId: number,
-    receiverName: string,
-  ): Promise<WishlistProduct[]>;
 }

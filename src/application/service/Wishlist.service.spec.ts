@@ -56,11 +56,10 @@ describe('WishlistService', () => {
     it('사용자의 위시리스트 수신자 기준으로 그룹핑하여 반환할 수 있다', async () => {
       //given
       const userId = 1;
-      const receiverName = '민수';
+      const productId = 101;
+
       queryPortMock.getUserWishlistByUserId.mockResolvedValueOnce([domainWishlistMockData]);
-      productPortMock.getWishlistProductsByReceiverName.mockResolvedValueOnce([
-        wishlistProductMockData,
-      ]);
+      productPortMock.getWishlistProductsByIds.mockResolvedValueOnce([wishlistProductMockData]);
 
       //when
       const result = await service.getWishlistGroupsByUserId(userId);
@@ -68,10 +67,7 @@ describe('WishlistService', () => {
       //then
       expect(result).toEqual([wishlistGroupedMockData]);
       expect(queryPortMock.getUserWishlistByUserId).toHaveBeenCalledWith(userId);
-      expect(productPortMock.getWishlistProductsByReceiverName).toHaveBeenCalledWith(
-        userId,
-        receiverName,
-      );
+      expect(productPortMock.getWishlistProductsByIds).toHaveBeenCalledWith([productId]);
     });
   });
   describe('getWishlistsByReceiverName', () => {
