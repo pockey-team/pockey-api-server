@@ -38,6 +38,6 @@ export const mapToWishlistProduct = (dbEntity: ProductDbEntity): WishlistProduct
     name: dbEntity.name,
     url: dbEntity.url,
     imageUrl: dbEntity.imageUrl,
-    price: dbEntity.price,
+    price: dbEntity.priceRange,
   };
 };

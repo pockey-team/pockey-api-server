@@ -14,7 +14,7 @@ export const wishlistProductMockData: WishlistProduct = {
   name: '감성 무드등',
   url: 'https://smartstore.naver.com/coredak/products/4785024689',
   imageUrl: 'https://example.com/image.jpg',
-  price: 10000,
+  price: '1만원대',
 };
 
 export const wishlistGroupedMockData: WishlistGroups = {

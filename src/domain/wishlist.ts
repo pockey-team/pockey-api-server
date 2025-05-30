@@ -11,7 +11,7 @@ export class WishlistItem {
   product: {
     id: number;
     name: string;
-    price: number;
+    price: string;
     url: string;
     imageUrl: string;
   } | null;
